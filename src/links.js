@@ -97,6 +97,7 @@ function generateFlightLink(origin, destination, checkIn, checkOut, travelerType
     'adults': travelers.adults,
     'cabinClass': 'ECONOMY',
     'children': travelers.children,
+    'infants': '0',
     'from': originInfo.code,
     'to': destInfo.code,
     'fromCountry': originInfo.country,

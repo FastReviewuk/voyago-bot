@@ -224,20 +224,6 @@ async function generateTravelPlan(ctx) {
   const loadingMsg = await ctx.reply('✨ Creating your personalized travel plan...');
   
   try {
-    // Generate AI insights with budget
-    const interestsStr = interests.join(', ');
-    let aiInsights;
-    
-    try {
-      // Use the new budget-aware function for basic insights
-      aiInsights = await generateDetailedTravelGuide(destination, travelerType, interestsStr, checkIn, checkOut, budget);
-      // Extract just the overview and key tips for the basic plan (first 200 words)
-      const sentences = aiInsights.split('. ');
-      aiInsights = sentences.slice(0, 8).join('. ') + '.';
-    } catch (error) {
-      aiInsights = 'Local insights loading... Meanwhile, here are top-rated experiences for your destination!';
-    }
-    
     // Generate affiliate links with user data
     const flightLink = generateFlightLink(origin, destination, checkIn, checkOut, travelerType);
     const hotelLink = generateHotelLink(destination, checkIn, checkOut, travelerType);
@@ -264,11 +250,7 @@ Discover highly-rated hotels (8+ rating) in ${destination}:`;
       [Markup.button.url('🏨 Book Hotel', hotelLink)]
     ]));
     
-    const insightsMessage = `✨ **Local Insights**
-
-${aiInsights}
-
-🎯 **Essential Travel Services**
+    const servicesMessage = `🎯 **Essential Travel Services**
 Everything you need for a smooth trip:`;
     
     // Create service buttons (2 per row)
@@ -282,7 +264,7 @@ Everything you need for a smooth trip:`;
       serviceButtons.push(row);
     }
     
-    await ctx.reply(insightsMessage, Markup.inlineKeyboard(serviceButtons));
+    await ctx.reply(servicesMessage, Markup.inlineKeyboard(serviceButtons));
     
     // Send protection services
     const protectionMessage = `🛡️ **Travel Protection & Support**
