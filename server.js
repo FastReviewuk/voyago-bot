@@ -2,6 +2,9 @@ require('dotenv').config();
 const express = require('express');
 const bot = require('./src/bot');
 
+// For Node.js versions that don't have fetch built-in
+const fetch = globalThis.fetch || require('node-fetch');
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 const WEBHOOK_URL = process.env.WEBHOOK_URL;
@@ -14,7 +17,16 @@ app.get('/', (req, res) => {
   res.json({
     status: 'Voyago Bot is running!',
     timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development'
+    environment: process.env.NODE_ENV || 'development',
+    uptime: process.uptime()
+  });
+});
+
+// Keep-alive ping endpoint
+app.get('/ping', (req, res) => {
+  res.json({
+    status: 'pong',
+    timestamp: new Date().toISOString()
   });
 });
 
@@ -37,6 +49,9 @@ async function startServer() {
       console.log('Setting webhook for production...');
       await bot.telegram.setWebhook(`${WEBHOOK_URL}/webhook`);
       console.log(`Webhook set to: ${WEBHOOK_URL}/webhook`);
+      
+      // Start keep-alive ping system for Render Free
+      startKeepAlive();
     } else {
       // Use polling for development
       console.log('Starting bot with polling for development...');
@@ -59,6 +74,26 @@ async function startServer() {
     console.error('Failed to start server:', error);
     process.exit(1);
   }
+}
+
+// Keep-alive system for Render Free
+function startKeepAlive() {
+  if (!WEBHOOK_URL) return;
+  
+  console.log('🔄 Starting keep-alive system...');
+  
+  // Ping every 10 minutes (600,000 ms)
+  setInterval(async () => {
+    try {
+      const response = await fetch(`${WEBHOOK_URL}/ping`);
+      const data = await response.json();
+      console.log(`✅ Keep-alive ping successful: ${data.timestamp}`);
+    } catch (error) {
+      console.log(`❌ Keep-alive ping failed: ${error.message}`);
+    }
+  }, 10 * 60 * 1000); // 10 minutes
+  
+  console.log('✅ Keep-alive system started (ping every 10 minutes)');
 }
 
 // Graceful shutdown
