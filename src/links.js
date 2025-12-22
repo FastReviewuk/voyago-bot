@@ -73,15 +73,15 @@ function generateFlightLink(origin, destination, checkIn, checkOut, travelerType
     const typeKey = type ? type.toLowerCase() : 'couple';
     switch (typeKey) {
       case 'solo':
-        return { adults: '1', children: '0' };
+        return { adults: '1', children: '0', infants: '0' };
       case 'couple':
-        return { adults: '2', children: '0' };
+        return { adults: '2', children: '0', infants: '0' };
       case 'family':
-        return { adults: '2', children: '2' };
+        return { adults: '2', children: '1', infants: '1' }; // Adjusted for realistic family
       case 'friends':
-        return { adults: '4', children: '0' };
+        return { adults: '3', children: '0', infants: '0' }; // Adjusted to 3 friends
       default:
-        return { adults: '2', children: '0' };
+        return { adults: '2', children: '0', infants: '0' };
     }
   };
   
@@ -97,7 +97,7 @@ function generateFlightLink(origin, destination, checkIn, checkOut, travelerType
     'adults': travelers.adults,
     'cabinClass': 'ECONOMY',
     'children': travelers.children,
-    'infants': '0',
+    'infants': travelers.infants,
     'from': originInfo.code,
     'to': destInfo.code,
     'fromCountry': originInfo.country,
@@ -131,9 +131,9 @@ function generateHotelLink(city, checkIn, checkOut, travelerType) {
       case 'couple':
         return { adults: '2', children: '0', rooms: '1' };
       case 'family':
-        return { adults: '2', children: '2', rooms: '1' };
+        return { adults: '2', children: '2', rooms: '1' }; // Keep 2 children for hotel
       case 'friends':
-        return { adults: '4', children: '0', rooms: '2' };
+        return { adults: '3', children: '0', rooms: '2' }; // 3 friends, 2 rooms
       default:
         return { adults: '2', children: '0', rooms: '1' };
     }
