@@ -15,6 +15,7 @@ function generateFlightLink(origin, destination, checkIn, checkOut) {
   // Get airport codes and country codes for cities
   const getAirportInfo = (city) => {
     const airports = {
+      // European cities
       'milan': { code: 'MXP.AIRPORT', country: 'IT', name: 'Milan+Malpensa+Airport' },
       'milano': { code: 'MXP.AIRPORT', country: 'IT', name: 'Milan+Malpensa+Airport' },
       'paris': { code: 'CDG.AIRPORT', country: 'FR', name: 'Paris+Charles+de+Gaulle+Airport' },
@@ -34,7 +35,22 @@ function generateFlightLink(origin, destination, checkIn, checkOut) {
       'cardiff': { code: 'CWL.AIRPORT', country: 'GB', name: 'Cardiff+Airport' },
       'manchester': { code: 'MAN.AIRPORT', country: 'GB', name: 'Manchester+Airport' },
       'dublin': { code: 'DUB.AIRPORT', country: 'IE', name: 'Dublin+Airport' },
-      'zurich': { code: 'ZUR.AIRPORT', country: 'CH', name: 'Zurich+Airport' }
+      'zurich': { code: 'ZUR.AIRPORT', country: 'CH', name: 'Zurich+Airport' },
+      // American cities
+      'new york': { code: 'JFK.AIRPORT', country: 'US', name: 'New+York+JFK+Airport' },
+      'newyork': { code: 'JFK.AIRPORT', country: 'US', name: 'New+York+JFK+Airport' },
+      'nyc': { code: 'JFK.AIRPORT', country: 'US', name: 'New+York+JFK+Airport' },
+      'los angeles': { code: 'LAX.AIRPORT', country: 'US', name: 'Los+Angeles+International+Airport' },
+      'losangeles': { code: 'LAX.AIRPORT', country: 'US', name: 'Los+Angeles+International+Airport' },
+      'la': { code: 'LAX.AIRPORT', country: 'US', name: 'Los+Angeles+International+Airport' },
+      'chicago': { code: 'ORD.AIRPORT', country: 'US', name: 'Chicago+O\'Hare+International+Airport' },
+      'miami': { code: 'MIA.AIRPORT', country: 'US', name: 'Miami+International+Airport' },
+      'las vegas': { code: 'LAS.AIRPORT', country: 'US', name: 'Las+Vegas+McCarran+International+Airport' },
+      'lasvegas': { code: 'LAS.AIRPORT', country: 'US', name: 'Las+Vegas+McCarran+International+Airport' },
+      'vegas': { code: 'LAS.AIRPORT', country: 'US', name: 'Las+Vegas+McCarran+International+Airport' },
+      'san francisco': { code: 'SFO.AIRPORT', country: 'US', name: 'San+Francisco+International+Airport' },
+      'sanfrancisco': { code: 'SFO.AIRPORT', country: 'US', name: 'San+Francisco+International+Airport' },
+      'sf': { code: 'SFO.AIRPORT', country: 'US', name: 'San+Francisco+International+Airport' }
     };
     
     const cityKey = city.toLowerCase();
@@ -129,6 +145,7 @@ function generateTravelServices(city, interests, checkIn = null, checkOut = null
   // Tiqets with proper city-specific URLs
   const getTiqetsLink = (city) => {
     const cityMappings = {
+      // European cities
       'venice': 'venice-attractions-c71510',
       'venezia': 'venice-attractions-c71510',
       'paris': 'paris-attractions-c75',
@@ -146,11 +163,26 @@ function generateTravelServices(city, interests, checkIn = null, checkOut = null
       'vienna': 'vienna-attractions-c83',
       'prague': 'prague-attractions-c84',
       'lisbon': 'lisbon-attractions-c85',
-      'lisboa': 'lisbon-attractions-c85'
+      'lisboa': 'lisbon-attractions-c85',
+      // American cities
+      'new york': 'new-york-attractions-c260932',
+      'newyork': 'new-york-attractions-c260932',
+      'nyc': 'new-york-attractions-c260932',
+      'los angeles': 'los-angeles-attractions-c260933',
+      'losangeles': 'los-angeles-attractions-c260933',
+      'la': 'los-angeles-attractions-c260933',
+      'chicago': 'chicago-attractions-c260934',
+      'miami': 'miami-attractions-c260935',
+      'las vegas': 'las-vegas-attractions-c260936',
+      'lasvegas': 'las-vegas-attractions-c260936',
+      'vegas': 'las-vegas-attractions-c260936',
+      'san francisco': 'san-francisco-attractions-c260937',
+      'sanfrancisco': 'san-francisco-attractions-c260937',
+      'sf': 'san-francisco-attractions-c260937'
     };
     
     const cityKey = city.toLowerCase();
-    const cityPath = cityMappings[cityKey] || `${city.toLowerCase()}-attractions`;
+    const cityPath = cityMappings[cityKey] || `${city.toLowerCase().replace(' ', '-')}-attractions`;
     
     return `https://www.tiqets.com/en/${cityPath}/?partner=travelpayouts.com&tq_campaign=voyago-bot&tq_click_id=voyago-${Date.now()}`;
   };
