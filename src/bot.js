@@ -215,11 +215,11 @@ async function generateTravelPlan(ctx) {
       aiInsights = 'Local insights loading... Meanwhile, here are top-rated experiences for your destination!';
     }
     
-    // Generate affiliate links
+    // Generate affiliate links with user data
     const flightLink = generateFlightLink(destination, checkIn, checkOut);
     const hotelLink = generateHotelLink(destination, checkIn, checkOut);
-    const travelServices = generateTravelServices(destination, interestsStr);
-    const protectionServices = generateProtectionServices();
+    const travelServices = generateTravelServices(destination, interestsStr, checkIn, checkOut);
+    const protectionServices = generateProtectionServices(destination, checkIn, checkOut);
     
     // Delete loading message
     await ctx.deleteMessage(loadingMsg.message_id);
