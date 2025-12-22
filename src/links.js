@@ -4,17 +4,18 @@
 
 /**
  * Generate Booking.com flight search link with pre-filled data
+ * @param {string} origin - Origin city
  * @param {string} destination - Destination city
  * @param {string} checkIn - Check-in date (YYYY-MM-DD)
  * @param {string} checkOut - Check-out date (YYYY-MM-DD)
  * @returns {string} Booking.com flights link with parameters
  */
-function generateFlightLink(destination, checkIn, checkOut) {
+function generateFlightLink(origin, destination, checkIn, checkOut) {
   const baseUrl = 'https://www.booking.com/flights';
   
   // Convert dates to booking.com format (YYYY-MM-DD)
   const params = new URLSearchParams({
-    'from-destination': 'anywhere',
+    'from-destination': origin,
     'to-destination': destination,
     'departure-date': checkIn,
     'return-date': checkOut,
@@ -62,48 +63,31 @@ function generateHotelLink(city, checkIn, checkOut) {
 function generateTravelServices(city, interests, checkIn = null, checkOut = null) {
   const services = [];
   
-  // eSIM with destination-specific data
-  const airaloLink = process.env.AIRALO_LINK + `?destination=${encodeURIComponent(city)}`;
+  // Airalo eSIM - use base link (they don't support URL parameters for destination)
   services.push({
-    title: '📱 eSIM & Data Plans',
-    link: airaloLink,
+    title: `📱 eSIM for ${city}`,
+    link: process.env.AIRALO_LINK,
     description: `Stay connected in ${city} with eSIM`
   });
   
-  // Events with city and date parameters
-  let ticketLink = process.env.TICKETNETWORK_LINK;
-  if (checkIn) {
-    const eventDate = new Date(checkIn);
-    const month = eventDate.getMonth() + 1;
-    const year = eventDate.getFullYear();
-    ticketLink += `?city=${encodeURIComponent(city)}&month=${month}&year=${year}`;
-  } else {
-    ticketLink += `?city=${encodeURIComponent(city)}`;
-  }
-  
+  // TicketNetwork - use base link with city in title
   services.push({
-    title: '🎟️ Events & Shows',
-    link: ticketLink,
+    title: `🎟️ ${city} Events`,
+    link: process.env.TICKETNETWORK_LINK,
     description: `Tickets for events in ${city}`
   });
   
-  // Attractions with city parameter
-  const tiqetsLink = process.env.TIQETS_LINK + `?city=${encodeURIComponent(city)}`;
+  // Tiqets - use base link (they redirect based on location)
   services.push({
-    title: '🏛️ Museums & Attractions',
-    link: tiqetsLink,
+    title: `🏛️ ${city} Attractions`,
+    link: process.env.TIQETS_LINK,
     description: `Skip-the-line tickets in ${city}`
   });
   
-  // Car rental with city and dates
-  let localrentLink = process.env.LOCALRENT_LINK + `?city=${encodeURIComponent(city)}`;
-  if (checkIn && checkOut) {
-    localrentLink += `&pickup_date=${checkIn}&return_date=${checkOut}`;
-  }
-  
+  // LocalRent - use base link with city in title
   services.push({
-    title: '🚗 Local Car Rentals',
-    link: localrentLink,
+    title: `🚗 ${city} Car Rentals`,
+    link: process.env.LOCALRENT_LINK,
     description: `Car rentals in ${city}`
   });
   
@@ -120,53 +104,31 @@ function generateTravelServices(city, interests, checkIn = null, checkOut = null
 function generateProtectionServices(destination = null, checkIn = null, checkOut = null) {
   const services = [];
   
-  // Flight compensation with destination
-  let airhelpLink = process.env.AIRHELP_LINK;
-  if (destination) {
-    airhelpLink += `?destination=${encodeURIComponent(destination)}`;
-  }
-  
+  // AirHelp - use base link (they don't support URL parameters)
   services.push({
     title: '✈️ Flight Compensation',
-    link: airhelpLink,
+    link: process.env.AIRHELP_LINK,
     description: 'Get compensation for flight delays/cancellations'
   });
   
-  // Legal support with destination
-  let compensairLink = process.env.COMPENSAIR_LINK;
-  if (destination) {
-    compensairLink += `?destination=${encodeURIComponent(destination)}`;
-  }
-  
+  // Compensair - use base link
   services.push({
     title: '⚖️ Travel Rights Support',
-    link: compensairLink,
+    link: process.env.COMPENSAIR_LINK,
     description: 'Legal support for travel disputes'
   });
   
-  // Travel insurance with trip dates
-  let insuranceLink = process.env.EKTA_INSURANCE_LINK;
-  if (destination && checkIn && checkOut) {
-    insuranceLink += `?destination=${encodeURIComponent(destination)}&start_date=${checkIn}&end_date=${checkOut}`;
-  } else if (destination) {
-    insuranceLink += `?destination=${encodeURIComponent(destination)}`;
-  }
-  
+  // Ekta Insurance - use base link with destination in title
   services.push({
-    title: '🛡️ Travel Insurance',
-    link: insuranceLink,
+    title: `🛡️ ${destination || 'Travel'} Insurance`,
+    link: process.env.EKTA_INSURANCE_LINK,
     description: `Comprehensive protection for ${destination || 'your trip'}`
   });
   
-  // Global SIM with destination
-  let yesimLink = process.env.YESIM_LINK;
-  if (destination) {
-    yesimLink += `?destination=${encodeURIComponent(destination)}`;
-  }
-  
+  // YeSim - use base link with destination in title
   services.push({
-    title: '📞 Global SIM Cards',
-    link: yesimLink,
+    title: `📞 ${destination || 'Global'} SIM Cards`,
+    link: process.env.YESIM_LINK,
     description: `Voice calls and data in ${destination || 'worldwide'}`
   });
   

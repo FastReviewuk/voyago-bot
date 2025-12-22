@@ -9,6 +9,7 @@ const bot = new Telegraf(process.env.BOT_TOKEN);
 bot.use(session({
   defaultSession: () => ({
     planningStep: null,
+    origin: null,
     destination: null,
     checkIn: null,
     checkOut: null,
@@ -73,7 +74,8 @@ bot.action('start_planning', (ctx) => {
 // Start planning process
 function startPlanningProcess(ctx) {
   // Reset session
-  ctx.session.planningStep = 'destination';
+  ctx.session.planningStep = 'origin';
+  ctx.session.origin = null;
   ctx.session.destination = null;
   ctx.session.checkIn = null;
   ctx.session.checkOut = null;
@@ -81,7 +83,7 @@ function startPlanningProcess(ctx) {
   ctx.session.interests = null;
   ctx.session.budget = null;
 
-  ctx.reply('🌍 Where would you like to go? \n\nPlease enter your destination city (e.g., "Lisbon", "Paris", "Rome"):');
+  ctx.reply('🛫 Where are you traveling from? \n\nPlease enter your departure city (e.g., "London", "New York", "Milan"):');
 }
 
 // Handle text messages based on planning step
@@ -90,6 +92,12 @@ bot.on('text', async (ctx) => {
   const text = ctx.message.text.trim();
 
   switch (step) {
+    case 'origin':
+      ctx.session.origin = text;
+      ctx.session.planningStep = 'destination';
+      ctx.reply('🌍 Where would you like to go? \n\nPlease enter your destination city (e.g., "Lisbon", "Paris", "Rome"):');
+      break;
+
     case 'destination':
       ctx.session.destination = text;
       ctx.session.planningStep = 'dates';
@@ -199,7 +207,7 @@ function parseDates(dateText, session) {
 
 // Generate complete travel plan
 async function generateTravelPlan(ctx) {
-  const { destination, checkIn, checkOut, travelerType, interests, budget } = ctx.session;
+  const { origin, destination, checkIn, checkOut, travelerType, interests, budget } = ctx.session;
   
   // Show loading message
   const loadingMsg = await ctx.reply('✨ Creating your personalized travel plan...');
@@ -216,7 +224,7 @@ async function generateTravelPlan(ctx) {
     }
     
     // Generate affiliate links with user data
-    const flightLink = generateFlightLink(destination, checkIn, checkOut);
+    const flightLink = generateFlightLink(origin, destination, checkIn, checkOut);
     const hotelLink = generateHotelLink(destination, checkIn, checkOut);
     const travelServices = generateTravelServices(destination, interestsStr, checkIn, checkOut);
     const protectionServices = generateProtectionServices(destination, checkIn, checkOut);
