@@ -126,10 +126,38 @@ function generateTravelServices(city, interests, checkIn = null, checkOut = null
     description: `Tickets for events in ${city}`
   });
   
-  // Tiqets - use base link (they redirect based on location)
+  // Tiqets with proper city-specific URLs
+  const getTiqetsLink = (city) => {
+    const cityMappings = {
+      'venice': 'venice-attractions-c71510',
+      'venezia': 'venice-attractions-c71510',
+      'paris': 'paris-attractions-c75',
+      'rome': 'rome-attractions-c72',
+      'roma': 'rome-attractions-c72',
+      'barcelona': 'barcelona-attractions-c76',
+      'madrid': 'madrid-attractions-c77',
+      'amsterdam': 'amsterdam-attractions-c78',
+      'london': 'london-attractions-c79',
+      'berlin': 'berlin-attractions-c80',
+      'milan': 'milan-attractions-c81',
+      'milano': 'milan-attractions-c81',
+      'florence': 'florence-attractions-c82',
+      'firenze': 'florence-attractions-c82',
+      'vienna': 'vienna-attractions-c83',
+      'prague': 'prague-attractions-c84',
+      'lisbon': 'lisbon-attractions-c85',
+      'lisboa': 'lisbon-attractions-c85'
+    };
+    
+    const cityKey = city.toLowerCase();
+    const cityPath = cityMappings[cityKey] || `${city.toLowerCase()}-attractions`;
+    
+    return `https://www.tiqets.com/en/${cityPath}/?partner=travelpayouts.com&tq_campaign=voyago-bot&tq_click_id=voyago-${Date.now()}`;
+  };
+  
   services.push({
     title: `🏛️ ${city} Attractions`,
-    link: process.env.TIQETS_LINK,
+    link: getTiqetsLink(city),
     description: `Skip-the-line tickets in ${city}`
   });
   
