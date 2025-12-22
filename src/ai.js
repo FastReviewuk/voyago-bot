@@ -83,16 +83,21 @@ Keep it practical, budget-conscious, and under 800 words. Use clear sections but
  * @returns {string} Detailed fallback travel guide
  */
 function getDetailedFallbackGuide(city, travelerType, interests, duration, budget) {
-  const budgetAmount = budget ? parseInt(budget.replace(/[^0-9]/g, '')) : 1000;
+  // Handle undefined budget
+  const budgetAmount = budget && budget !== 'undefined' ? parseInt(budget.replace(/[^0-9]/g, '')) : 1000;
   const dailyBudget = Math.round(budgetAmount / duration);
   const budgetLevel = dailyBudget < 50 ? 'budget' : dailyBudget < 100 ? 'mid-range' : 'luxury';
+  
+  // If budget is undefined or invalid, use mid-range as default
+  const displayBudget = budget && budget !== 'undefined' ? budget : '€1000 (estimated)';
+  const displayDaily = budget && budget !== 'undefined' ? `€${dailyBudget}` : '€140';
   
   const guides = {
     'paris': `DESTINATION OVERVIEW: Paris, the City of Light, captivates visitors with its timeless elegance, world-class museums, and romantic atmosphere. From iconic landmarks to charming neighborhoods, Paris offers unforgettable experiences for every budget level.
 
 KEY INFORMATION: Best visited April-June and September-October. Currency: Euro (EUR). Language: French (English widely spoken in tourist areas). Metro day pass: €7.50. Many museums offer free entry on first Sunday mornings.
 
-BUDGET BREAKDOWN (${budget} total, ~€${dailyBudget}/day):
+BUDGET BREAKDOWN (${displayBudget} total, ~${displayDaily}/day):
 ${budgetLevel === 'budget' ? 
   '• Accommodation: €25-40/night (hostels, budget hotels)\n• Food: €15-25/day (bakeries, bistros, markets)\n• Transport: €7.50/day (metro pass)\n• Activities: €5-15/day (many free attractions)' :
   budgetLevel === 'mid-range' ?
@@ -117,7 +122,7 @@ PRACTICAL INFO: ${budgetLevel === 'budget' ? 'Use Citymapper app for transport. 
 
 KEY INFORMATION: Best visited April-June and September-November. Currency: Euro (EUR). Language: Italian (some English in tourist areas). Metro day pass: €7. Many churches and piazzas are completely free.
 
-BUDGET BREAKDOWN (${budget} total, ~€${dailyBudget}/day):
+BUDGET BREAKDOWN (${displayBudget} total, ~${displayDaily}/day):
 ${budgetLevel === 'budget' ? 
   '• Accommodation: €20-35/night (hostels, guesthouses)\n• Food: €12-20/day (pizza al taglio, trattorias)\n• Transport: €7/day (metro/bus pass)\n• Activities: €8-15/day (many free sites)' :
   budgetLevel === 'mid-range' ?
@@ -142,7 +147,7 @@ PRACTICAL INFO: ${budgetLevel === 'budget' ? 'Roma Pass not worth it for budget 
 
 KEY INFORMATION: Best visited May-September. Currency: British Pound (GBP). Language: English. Oyster Card daily cap: £7.70. Many world-class museums are completely free with suggested donations.
 
-BUDGET BREAKDOWN (${budget} total, ~£${Math.round(dailyBudget * 0.85)}/day):
+BUDGET BREAKDOWN (${displayBudget} total, ~£${Math.round(dailyBudget * 0.85)}/day):
 ${budgetLevel === 'budget' ? 
   '• Accommodation: £25-45/night (hostels, budget hotels)\n• Food: £15-25/day (pub meals, markets, chains)\n• Transport: £7.70/day (Oyster Card daily cap)\n• Activities: £5-15/day (many free museums and parks)' :
   budgetLevel === 'mid-range' ?
@@ -170,9 +175,9 @@ PRACTICAL INFO: ${budgetLevel === 'budget' ? 'Contactless payment widely accepte
   }
 
   // Generic budget-aware fallback
-  return `DESTINATION OVERVIEW: ${city} offers diverse experiences for travelers with a ${budget} budget. This destination provides excellent value with a mix of free and paid attractions suitable for ${travelerType} travelers.
+  return `DESTINATION OVERVIEW: ${city} offers diverse experiences for travelers with a ${displayBudget} budget. This destination provides excellent value with a mix of free and paid attractions suitable for ${travelerType} travelers.
 
-BUDGET BREAKDOWN (${budget} total, ~${Math.round(budgetAmount/duration)} per day):
+BUDGET BREAKDOWN (${displayBudget} total, ~${displayDaily} per day):
 • Accommodation: ${budgetLevel === 'budget' ? 'Budget hotels, hostels, guesthouses' : budgetLevel === 'mid-range' ? 'Mid-range hotels, boutique properties' : 'Luxury hotels, premium locations'}
 • Food: ${budgetLevel === 'budget' ? 'Local eateries, street food, markets' : budgetLevel === 'mid-range' ? 'Restaurants, cafés, local specialties' : 'Fine dining, premium experiences'}
 • Activities: ${budgetLevel === 'budget' ? 'Free attractions, walking tours, public spaces' : budgetLevel === 'mid-range' ? 'Mix of free and paid attractions' : 'Premium tours, exclusive experiences'}

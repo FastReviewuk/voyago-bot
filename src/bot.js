@@ -224,12 +224,16 @@ async function generateTravelPlan(ctx) {
   const loadingMsg = await ctx.reply('✨ Creating your personalized travel plan...');
   
   try {
-    // Generate AI insights
+    // Generate AI insights with budget
     const interestsStr = interests.join(', ');
     let aiInsights;
     
     try {
-      aiInsights = await generateTravelTips(destination, travelerType, interestsStr);
+      // Use the new budget-aware function for basic insights
+      aiInsights = await generateDetailedTravelGuide(destination, travelerType, interestsStr, checkIn, checkOut, budget);
+      // Extract just the overview and key tips for the basic plan (first 200 words)
+      const sentences = aiInsights.split('. ');
+      aiInsights = sentences.slice(0, 8).join('. ') + '.';
     } catch (error) {
       aiInsights = 'Local insights loading... Meanwhile, here are top-rated experiences for your destination!';
     }
