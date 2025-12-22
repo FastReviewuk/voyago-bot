@@ -11,18 +11,21 @@
  * @returns {string} Booking.com flights link with parameters
  */
 function generateFlightLink(origin, destination, checkIn, checkOut) {
-  const baseUrl = 'https://www.booking.com/flights';
+  // Booking.com flights uses different parameter structure
+  const baseUrl = 'https://www.booking.com/flights/index.html';
   
-  // Convert dates to booking.com format (YYYY-MM-DD)
   const params = new URLSearchParams({
-    'from-destination': origin,
-    'to-destination': destination,
-    'departure-date': checkIn,
-    'return-date': checkOut,
+    'type': 'ROUNDTRIP',
     'adults': '2',
     'children': '0',
     'infants': '0',
-    'cabin-class': 'economy'
+    'cabinclass': 'ECONOMY',
+    'from_sf': origin,
+    'from_st': origin,
+    'to_sf': destination, 
+    'to_st': destination,
+    'depart_date': checkIn,
+    'return_date': checkOut
   });
   
   return `${baseUrl}?${params.toString()}`;
