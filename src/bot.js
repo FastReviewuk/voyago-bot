@@ -297,18 +297,24 @@ Stay safe and protected during your journey:`;
     await ctx.reply(protectionMessage, Markup.inlineKeyboard(protectionButtons));
     
     // Final message with travel guide option
+    const duration = Math.ceil((new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24));
+    const budgetAmount = budget ? parseInt(budget.replace(/[^0-9]/g, '')) : 0;
+    const dailyBudget = budgetAmount ? Math.round(budgetAmount / duration) : 0;
+    const budgetLevel = dailyBudget < 50 ? 'budget-friendly' : dailyBudget < 100 ? 'mid-range' : 'luxury';
+    
     const finalMessage = `🎉 Your travel plan is ready!
 
-💡 **Tips:**
+💡 **Tips for your ${budgetLevel} ${destination} trip:**
 • All links support Voyago Bot development (no extra cost to you)
 • Book early for better prices and availability
 • Check visa requirements for ${destination}
+${budgetAmount ? `• Your ${budget} budget allows for ~${dailyBudget} per day spending` : ''}
 
 🗺️ **Want a detailed travel guide?**
-I can create a personalized ${Math.ceil((new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24))}-day itinerary with local tips, must-see attractions, and insider recommendations for ${destination}!`;
+I can create a personalized ${duration}-day itinerary with ${budgetLevel} recommendations, local tips, and insider advice for ${destination}!`;
     
     await ctx.reply(finalMessage, Markup.inlineKeyboard([
-      [Markup.button.callback('📖 Yes, Create Travel Guide!', 'want_travel_guide')],
+      [Markup.button.callback('📖 Yes, Create Budget-Smart Guide!', 'want_travel_guide')],
       [Markup.button.callback('✈️ No Thanks, I\'m Ready!', 'skip_travel_guide')],
       [Markup.button.callback('🗺️ Plan Another Trip', 'start_planning')]
     ]));
@@ -333,7 +339,7 @@ async function generateDetailedGuide(ctx) {
   try {
     // Generate detailed AI guide
     const interestsStr = interests.join(', ');
-    const detailedGuide = await generateDetailedTravelGuide(destination, travelerType, interestsStr, checkIn, checkOut);
+    const detailedGuide = await generateDetailedTravelGuide(destination, travelerType, interestsStr, checkIn, checkOut, budget);
     
     // Delete loading message
     await ctx.deleteMessage(loadingMsg.message_id);
