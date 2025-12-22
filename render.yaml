@@ -1,0 +1,32 @@
+services:
+  - type: web
+    name: voyago-bot
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: BOT_TOKEN
+        value: 8452037928:AAFLKdDwK9c5KPsNixPQD55lzr6v8emnvS4
+      - key: OPENROUTER_API_KEY
+        value: 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
+      - key: YESIM_LINK
+        value: https://yesim.tp.st/MDrTZawy
+      - key: TICKETNETWORK_LINK
+        value: https://ticketnetwork.tp.st/54S9pwIV
+      - key: BOOKING_LINK
+        value: https://booking.com
+      - key: AIRHELP_LINK
+        value: https://airhelp.tp.st/twpjfhUm
+      - key: COMPENSAIR_LINK
+        value: https://compensair.tp.st/fsmEoO2H
+      - key: LOCALRENT_LINK
+        value: https://localrent.tp.st/iUB5sTmY
+      - key: TIQETS_LINK
+        value: https://tiqets.tp.st/7o1fi7Z4
+      - key: EKTA_INSURANCE_LINK
+        value: https://ektatraveling.tp.st/jw1Qj1iv
+      - key: AIRALO_LINK
+        value: https://airalo.tp.st/Qne85Qor

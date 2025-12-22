@@ -1,0 +1,53 @@
+🤖 BotFather Configuration for @Voyago_bot
+
+=== COMMANDS TO SET ===
+/setcommands
+
+start - 🌍 Welcome to Voyago Bot
+plan - 🗺️ Plan your next trip
+help - 🆘 Get help and information
+
+=== DESCRIPTION ===
+/setdescription
+
+🌍 AI-powered travel assistant that helps you plan amazing trips with personalized recommendations.
+
+✨ Features:
+• Custom travel plans based on your preferences
+• AI-generated local insights
+• Flight, hotel & experience booking
+• Travel protection services
+• eSIM and connectivity solutions
+
+🔒 Privacy-focused - no personal data stored
+
+=== ABOUT TEXT ===
+/setabouttext
+
+Voyago Bot is your intelligent travel companion, powered by AI to create personalized travel experiences. We help you discover amazing destinations while providing access to essential travel services through trusted partners.
+
+=== SHORT DESCRIPTION ===
+/setshortdescription
+
+AI travel assistant for personalized trip planning with real-time insights and booking services.
+
+=== BOT PICTURE ===
+Upload a travel-themed image (airplane, world map, or compass icon)
+
+=== PRIVACY SETTINGS ===
+/setprivacy
+
+Enabled - Bot can only see messages sent directly to it
+
+=== INLINE MODE ===
+/setinline
+
+Disabled (not needed for this bot)
+
+=== DOMAIN ===
+/setdomain
+
+yourdomain.com (replace with your actual domain)
+
+=== BOT TOKEN ===
+Already configured: 8452037928:AAFLKdDwK9c5KPsNixPQD55lzr6v8emnvS4

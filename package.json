@@ -1,0 +1,24 @@
+{
+  "name": "voyago-bot",
+  "version": "1.0.0",
+  "description": "AI-powered travel planning Telegram bot with affiliate monetization",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "test": "node test-config.js",
+    "config": "node test-config.js"
+  },
+  "keywords": ["telegram", "bot", "travel", "ai", "affiliate"],
+  "author": "Voyago Bot",
+  "license": "MIT",
+  "dependencies": {
+    "telegraf": "^4.15.6",
+    "axios": "^1.6.2",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
