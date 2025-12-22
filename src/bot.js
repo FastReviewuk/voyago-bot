@@ -239,8 +239,8 @@ async function generateTravelPlan(ctx) {
     }
     
     // Generate affiliate links with user data
-    const flightLink = generateFlightLink(origin, destination, checkIn, checkOut);
-    const hotelLink = generateHotelLink(destination, checkIn, checkOut);
+    const flightLink = generateFlightLink(origin, destination, checkIn, checkOut, travelerType);
+    const hotelLink = generateHotelLink(destination, checkIn, checkOut, travelerType);
     const travelServices = generateTravelServices(destination, interestsStr, checkIn, checkOut);
     const protectionServices = generateProtectionServices(destination, checkIn, checkOut);
     

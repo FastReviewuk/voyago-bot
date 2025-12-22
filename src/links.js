@@ -9,9 +9,10 @@
  * @param {string} destination - Destination city
  * @param {string} checkIn - Check-in date (YYYY-MM-DD)
  * @param {string} checkOut - Check-out date (YYYY-MM-DD)
+ * @param {string} travelerType - Type of traveler (Solo/Couple/Family/Friends)
  * @returns {string} Booking.com flights link with parameters
  */
-function generateFlightLink(origin, destination, checkIn, checkOut) {
+function generateFlightLink(origin, destination, checkIn, checkOut, travelerType) {
   // Get airport codes and country codes for cities
   const getAirportInfo = (city) => {
     const airports = {
@@ -67,17 +68,35 @@ function generateFlightLink(origin, destination, checkIn, checkOut) {
     };
   };
   
+  // Determine number of travelers based on type
+  const getTravelerCount = (type) => {
+    const typeKey = type ? type.toLowerCase() : 'couple';
+    switch (typeKey) {
+      case 'solo':
+        return { adults: '1', children: '0' };
+      case 'couple':
+        return { adults: '2', children: '0' };
+      case 'family':
+        return { adults: '2', children: '2' };
+      case 'friends':
+        return { adults: '4', children: '0' };
+      default:
+        return { adults: '2', children: '0' };
+    }
+  };
+  
   const originInfo = getAirportInfo(origin);
   const destInfo = getAirportInfo(destination);
+  const travelers = getTravelerCount(travelerType);
   
   // Build the URL using Booking.com flights format
   const baseUrl = `https://flights.booking.com/flights/${originInfo.code}-${destInfo.code}/`;
   
   const params = new URLSearchParams({
     'type': 'ROUNDTRIP',
-    'adults': '2',
+    'adults': travelers.adults,
     'cabinClass': 'ECONOMY',
-    'children': '0',
+    'children': travelers.children,
     'from': originInfo.code,
     'to': destInfo.code,
     'fromCountry': originInfo.country,
@@ -98,18 +117,37 @@ function generateFlightLink(origin, destination, checkIn, checkOut) {
  * @param {string} city - Destination city
  * @param {string} checkIn - Check-in date (YYYY-MM-DD)
  * @param {string} checkOut - Check-out date (YYYY-MM-DD)
+ * @param {string} travelerType - Type of traveler (Solo/Couple/Family/Friends)
  * @returns {string} Booking.com hotels link with parameters
  */
-function generateHotelLink(city, checkIn, checkOut) {
+function generateHotelLink(city, checkIn, checkOut, travelerType) {
+  // Determine number of travelers and rooms based on type
+  const getHotelBooking = (type) => {
+    const typeKey = type ? type.toLowerCase() : 'couple';
+    switch (typeKey) {
+      case 'solo':
+        return { adults: '1', children: '0', rooms: '1' };
+      case 'couple':
+        return { adults: '2', children: '0', rooms: '1' };
+      case 'family':
+        return { adults: '2', children: '2', rooms: '1' };
+      case 'friends':
+        return { adults: '4', children: '0', rooms: '2' };
+      default:
+        return { adults: '2', children: '0', rooms: '1' };
+    }
+  };
+  
+  const booking = getHotelBooking(travelerType);
   const baseUrl = 'https://www.booking.com/searchresults.html';
   
   const params = new URLSearchParams({
     'ss': city,
     'checkin': checkIn,
     'checkout': checkOut,
-    'group_adults': '2',
-    'no_rooms': '1',
-    'group_children': '0',
+    'group_adults': booking.adults,
+    'no_rooms': booking.rooms,
+    'group_children': booking.children,
     'review_score': '80', // 8+ rating
     'order': 'review_score_and_price'
   });
