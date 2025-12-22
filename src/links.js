@@ -3,53 +3,78 @@
  */
 
 /**
- * Generate flight search link with pre-filled data
- * Using Skyscanner which has better deep linking support
+ * Generate Booking.com flight search link with pre-filled data
+ * Using the correct Booking.com flights URL structure
  * @param {string} origin - Origin city
  * @param {string} destination - Destination city
  * @param {string} checkIn - Check-in date (YYYY-MM-DD)
  * @param {string} checkOut - Check-out date (YYYY-MM-DD)
- * @returns {string} Flight search link with parameters
+ * @returns {string} Booking.com flights link with parameters
  */
 function generateFlightLink(origin, destination, checkIn, checkOut) {
-  // Use Skyscanner for better deep linking, then redirect to Booking.com
-  // Format: skyscanner.com/transport/flights/origin/destination/checkIn/checkOut
-  
-  // Convert city names to airport codes for better results
-  const getAirportCode = (city) => {
-    const codes = {
-      'milan': 'MIL',
-      'milano': 'MIL', 
-      'paris': 'PAR',
-      'london': 'LON',
-      'rome': 'ROM',
-      'roma': 'ROM',
-      'barcelona': 'BCN',
-      'madrid': 'MAD',
-      'amsterdam': 'AMS',
-      'berlin': 'BER',
-      'vienna': 'VIE',
-      'prague': 'PRG',
-      'lisbon': 'LIS',
-      'lisboa': 'LIS'
+  // Get airport codes and country codes for cities
+  const getAirportInfo = (city) => {
+    const airports = {
+      'milan': { code: 'MXP.AIRPORT', country: 'IT', name: 'Milan+Malpensa+Airport' },
+      'milano': { code: 'MXP.AIRPORT', country: 'IT', name: 'Milan+Malpensa+Airport' },
+      'paris': { code: 'CDG.AIRPORT', country: 'FR', name: 'Paris+Charles+de+Gaulle+Airport' },
+      'london': { code: 'LHR.AIRPORT', country: 'GB', name: 'London+Heathrow+Airport' },
+      'rome': { code: 'FCO.AIRPORT', country: 'IT', name: 'Rome+Fiumicino+Airport' },
+      'roma': { code: 'FCO.AIRPORT', country: 'IT', name: 'Rome+Fiumicino+Airport' },
+      'barcelona': { code: 'BCN.AIRPORT', country: 'ES', name: 'Barcelona+Airport' },
+      'madrid': { code: 'MAD.AIRPORT', country: 'ES', name: 'Madrid+Barajas+Airport' },
+      'amsterdam': { code: 'AMS.AIRPORT', country: 'NL', name: 'Amsterdam+Schiphol+Airport' },
+      'berlin': { code: 'BER.AIRPORT', country: 'DE', name: 'Berlin+Brandenburg+Airport' },
+      'vienna': { code: 'VIE.AIRPORT', country: 'AT', name: 'Vienna+International+Airport' },
+      'prague': { code: 'PRG.AIRPORT', country: 'CZ', name: 'Prague+Airport' },
+      'lisbon': { code: 'LIS.AIRPORT', country: 'PT', name: 'Lisbon+Airport' },
+      'lisboa': { code: 'LIS.AIRPORT', country: 'PT', name: 'Lisbon+Airport' },
+      'venice': { code: 'VCE.AIRPORT', country: 'IT', name: 'Venice+Marco+Polo+Airport' },
+      'venezia': { code: 'VCE.AIRPORT', country: 'IT', name: 'Venice+Marco+Polo+Airport' },
+      'cardiff': { code: 'CWL.AIRPORT', country: 'GB', name: 'Cardiff+Airport' },
+      'manchester': { code: 'MAN.AIRPORT', country: 'GB', name: 'Manchester+Airport' },
+      'dublin': { code: 'DUB.AIRPORT', country: 'IE', name: 'Dublin+Airport' },
+      'zurich': { code: 'ZUR.AIRPORT', country: 'CH', name: 'Zurich+Airport' }
     };
-    return codes[city.toLowerCase()] || city.toUpperCase().substring(0, 3);
+    
+    const cityKey = city.toLowerCase();
+    if (airports[cityKey]) {
+      return airports[cityKey];
+    }
+    
+    // Default fallback
+    const cityName = city.charAt(0).toUpperCase() + city.slice(1).toLowerCase();
+    return {
+      code: cityName.substring(0, 3).toUpperCase() + '.AIRPORT',
+      country: 'XX',
+      name: cityName.replace(' ', '+') + '+Airport'
+    };
   };
   
-  const originCode = getAirportCode(origin);
-  const destCode = getAirportCode(destination);
+  const originInfo = getAirportInfo(origin);
+  const destInfo = getAirportInfo(destination);
   
-  // Format dates as YYMMDD for Skyscanner
-  const formatSkyscannerDate = (dateStr) => {
-    const [year, month, day] = dateStr.split('-');
-    return year.substring(2) + month + day;
-  };
+  // Build the URL using Booking.com flights format
+  const baseUrl = `https://flights.booking.com/flights/${originInfo.code}-${destInfo.code}/`;
   
-  const departDate = formatSkyscannerDate(checkIn);
-  const returnDate = formatSkyscannerDate(checkOut);
+  const params = new URLSearchParams({
+    'type': 'ROUNDTRIP',
+    'adults': '2',
+    'cabinClass': 'ECONOMY',
+    'children': '0',
+    'from': originInfo.code,
+    'to': destInfo.code,
+    'fromCountry': originInfo.country,
+    'toCountry': destInfo.country,
+    'fromLocationName': originInfo.name,
+    'toLocationName': destInfo.name,
+    'depart': checkIn,
+    'return': checkOut,
+    'sort': 'BEST',
+    'travelPurpose': 'leisure'
+  });
   
-  // Skyscanner URL with affiliate redirect to Booking.com
-  return `https://www.skyscanner.com/transport/flights/${originCode}/${destCode}/${departDate}/${returnDate}/?adults=2&children=0&adultsv2=2&childrenv2=&infants=0&cabinclass=economy&rtn=1&preferdirects=false&outboundaltsenabled=false&inboundaltsenabled=false&ref=home&utm_source=voyago&utm_medium=affiliate`;
+  return `${baseUrl}?${params.toString()}`;
 }
 
 /**

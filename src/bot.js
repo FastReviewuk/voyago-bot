@@ -236,7 +236,7 @@ async function generateTravelPlan(ctx) {
     const planMessage = `🗺️ Your Custom Travel Plan for ${destination}
 
 ✈️ **Flights**
-Compare flight prices from ${origin} to ${destination}:`;
+Find flights from ${origin} to ${destination} with Booking.com:`;
     
     await ctx.reply(planMessage, Markup.inlineKeyboard([
       [Markup.button.url('🔍 Search Flights', flightLink)]
