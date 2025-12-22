@@ -1,5 +1,5 @@
 const { Telegraf, session, Markup } = require('telegraf');
-const { generateTravelTips } = require('./ai');
+const { generateTravelTips, generateDetailedTravelGuide } = require('./ai');
 const { generateFlightLink, generateHotelLink, generateTravelServices, generateProtectionServices } = require('./links');
 
 // Initialize bot
@@ -180,6 +180,17 @@ bot.action('interests_done', (ctx) => {
   ctx.reply('💶 What\'s your total budget for this trip?\n\nPlease enter your budget (e.g., "€800", "$1200", "£600"):');
 });
 
+// Handle travel guide request
+bot.action('want_travel_guide', async (ctx) => {
+  ctx.answerCbQuery();
+  await generateDetailedGuide(ctx);
+});
+
+bot.action('skip_travel_guide', (ctx) => {
+  ctx.answerCbQuery();
+  ctx.reply('No problem! Your travel plan with booking links is ready above. Have an amazing trip! ✈️\n\nUse /plan anytime to plan another adventure!');
+});
+
 // Parse dates from user input
 function parseDates(dateText, session) {
   const dateRegex = /(\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*(\d{1,2}\/\d{1,2}\/\d{4})/;
@@ -285,7 +296,7 @@ Stay safe and protected during your journey:`;
     
     await ctx.reply(protectionMessage, Markup.inlineKeyboard(protectionButtons));
     
-    // Final message
+    // Final message with travel guide option
     const finalMessage = `🎉 Your travel plan is ready!
 
 💡 **Tips:**
@@ -293,9 +304,12 @@ Stay safe and protected during your journey:`;
 • Book early for better prices and availability
 • Check visa requirements for ${destination}
 
-Ready to plan another trip? Use /plan anytime!`;
+🗺️ **Want a detailed travel guide?**
+I can create a personalized ${Math.ceil((new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24))}-day itinerary with local tips, must-see attractions, and insider recommendations for ${destination}!`;
     
     await ctx.reply(finalMessage, Markup.inlineKeyboard([
+      [Markup.button.callback('📖 Yes, Create Travel Guide!', 'want_travel_guide')],
+      [Markup.button.callback('✈️ No Thanks, I\'m Ready!', 'skip_travel_guide')],
       [Markup.button.callback('🗺️ Plan Another Trip', 'start_planning')]
     ]));
     
@@ -307,6 +321,82 @@ Ready to plan another trip? Use /plan anytime!`;
     await ctx.deleteMessage(loadingMsg.message_id);
     ctx.reply('❌ Sorry, there was an error generating your travel plan. Please try again with /plan');
   }
+}
+
+// Generate detailed travel guide
+async function generateDetailedGuide(ctx) {
+  const { origin, destination, checkIn, checkOut, travelerType, interests, budget } = ctx.session;
+  
+  // Show loading message
+  const loadingMsg = await ctx.reply('📖 Creating your personalized travel guide...\n\nThis may take a moment as I gather the best local insights for you!');
+  
+  try {
+    // Generate detailed AI guide
+    const interestsStr = interests.join(', ');
+    const detailedGuide = await generateDetailedTravelGuide(destination, travelerType, interestsStr, checkIn, checkOut);
+    
+    // Delete loading message
+    await ctx.deleteMessage(loadingMsg.message_id);
+    
+    // Split guide into chunks if too long for Telegram
+    const maxLength = 4000;
+    const guideChunks = splitTextIntoChunks(detailedGuide, maxLength);
+    
+    // Send guide header
+    const headerMessage = `📖 **Your Personal ${destination} Travel Guide**\n\n🧳 Tailored for: ${travelerType} traveler\n❤️ Interests: ${interestsStr}\n📅 Duration: ${Math.ceil((new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24))} days\n💰 Budget: ${budget}\n\n---\n\n`;
+    
+    // Send first chunk with header
+    await ctx.reply(headerMessage + guideChunks[0]);
+    
+    // Send remaining chunks
+    for (let i = 1; i < guideChunks.length; i++) {
+      await new Promise(resolve => setTimeout(resolve, 1000)); // 1 second delay
+      await ctx.reply(guideChunks[i]);
+    }
+    
+    // Final message
+    const guideFooter = `\n---\n\n🎯 **Ready for Your Adventure!**\n\nYour complete travel plan is now ready. Don't forget to use the booking links above for flights, hotels, and attractions!\n\nHave an amazing trip to ${destination}! ✈️🌟`;
+    
+    await ctx.reply(guideFooter, Markup.inlineKeyboard([
+      [Markup.button.callback('🗺️ Plan Another Trip', 'start_planning')]
+    ]));
+    
+    // Reset session
+    ctx.session.planningStep = null;
+    
+  } catch (error) {
+    console.error('Error generating detailed guide:', error);
+    await ctx.deleteMessage(loadingMsg.message_id);
+    ctx.reply('❌ Sorry, there was an error generating your detailed travel guide. But your booking links above are still ready to use!\n\nTry the guide feature again later, or use /plan for a new trip.');
+  }
+}
+
+// Helper function to split text into chunks
+function splitTextIntoChunks(text, maxLength) {
+  const chunks = [];
+  let currentChunk = '';
+  const sentences = text.split('. ');
+  
+  for (const sentence of sentences) {
+    if ((currentChunk + sentence + '. ').length <= maxLength) {
+      currentChunk += sentence + '. ';
+    } else {
+      if (currentChunk) {
+        chunks.push(currentChunk.trim());
+        currentChunk = sentence + '. ';
+      } else {
+        // If single sentence is too long, split it
+        chunks.push(sentence.substring(0, maxLength - 3) + '...');
+        currentChunk = '...' + sentence.substring(maxLength - 3) + '. ';
+      }
+    }
+  }
+  
+  if (currentChunk) {
+    chunks.push(currentChunk.trim());
+  }
+  
+  return chunks;
 }
 
 // Error handling
