@@ -144,18 +144,6 @@ bot.action(/traveler_(.+)/, (ctx) => {
 bot.action(/interest_(.+)/, (ctx) => {
   const interest = ctx.match[1];
   
-  if (interest === 'done') {
-    // If no interests selected, set default
-    if (!ctx.session.interests || ctx.session.interests.length === 0) {
-      ctx.session.interests = ['Culture']; // Default interest
-    }
-    
-    ctx.session.planningStep = 'budget';
-    ctx.answerCbQuery();
-    ctx.reply('💶 What\'s your total budget for this trip?\n\nPlease enter your budget (e.g., "€800", "$1200", "£600"):');
-    return;
-  }
-  
   // Add interest to session
   if (!ctx.session.interests) {
     ctx.session.interests = [];
@@ -170,6 +158,18 @@ bot.action(/interest_(.+)/, (ctx) => {
     ctx.session.interests = ctx.session.interests.filter(i => i !== interestName);
     ctx.answerCbQuery(`${interestName} removed!`);
   }
+});
+
+// Handle "Done" button for interests
+bot.action('interests_done', (ctx) => {
+  // If no interests selected, set default
+  if (!ctx.session.interests || ctx.session.interests.length === 0) {
+    ctx.session.interests = ['Culture']; // Default interest
+  }
+  
+  ctx.session.planningStep = 'budget';
+  ctx.answerCbQuery();
+  ctx.reply('💶 What\'s your total budget for this trip?\n\nPlease enter your budget (e.g., "€800", "$1200", "£600"):');
 });
 
 // Parse dates from user input
