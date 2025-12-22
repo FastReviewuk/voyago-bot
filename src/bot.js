@@ -130,11 +130,12 @@ bot.action(/traveler_(.+)/, (ctx) => {
   ctx.session.planningStep = 'interests';
   
   ctx.answerCbQuery();
-  ctx.reply('❤️ What are your top interests? (Select all that apply)', 
+  ctx.reply('❤️ What are your top interests? (You can select multiple)\n\n💡 Tip: Click to toggle interests on/off, then click Done when ready.', 
     Markup.inlineKeyboard([
       [Markup.button.callback('🏛️ Culture', 'interest_culture'), Markup.button.callback('🍽️ Food', 'interest_food')],
       [Markup.button.callback('🌿 Nature', 'interest_nature'), Markup.button.callback('🏖️ Beach', 'interest_beach')],
-      [Markup.button.callback('🌃 Nightlife', 'interest_nightlife'), Markup.button.callback('✅ Done', 'interests_done')]
+      [Markup.button.callback('🌃 Nightlife', 'interest_nightlife')],
+      [Markup.button.callback('✅ Done', 'interests_done')]
     ])
   );
 });
@@ -144,9 +145,9 @@ bot.action(/interest_(.+)/, (ctx) => {
   const interest = ctx.match[1];
   
   if (interest === 'done') {
-    if (!ctx.session.interests) {
-      ctx.answerCbQuery('Please select at least one interest!', true);
-      return;
+    // If no interests selected, set default
+    if (!ctx.session.interests || ctx.session.interests.length === 0) {
+      ctx.session.interests = ['Culture']; // Default interest
     }
     
     ctx.session.planningStep = 'budget';
@@ -163,9 +164,12 @@ bot.action(/interest_(.+)/, (ctx) => {
   const interestName = interest.charAt(0).toUpperCase() + interest.slice(1);
   if (!ctx.session.interests.includes(interestName)) {
     ctx.session.interests.push(interestName);
+    ctx.answerCbQuery(`${interestName} added!`);
+  } else {
+    // Remove interest if already selected (toggle functionality)
+    ctx.session.interests = ctx.session.interests.filter(i => i !== interestName);
+    ctx.answerCbQuery(`${interestName} removed!`);
   }
-  
-  ctx.answerCbQuery(`${interestName} added!`);
 });
 
 // Parse dates from user input
