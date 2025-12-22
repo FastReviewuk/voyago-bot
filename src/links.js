@@ -3,32 +3,53 @@
  */
 
 /**
- * Generate Booking.com flight search link with pre-filled data
+ * Generate flight search link with pre-filled data
+ * Using Skyscanner which has better deep linking support
  * @param {string} origin - Origin city
  * @param {string} destination - Destination city
  * @param {string} checkIn - Check-in date (YYYY-MM-DD)
  * @param {string} checkOut - Check-out date (YYYY-MM-DD)
- * @returns {string} Booking.com flights link with parameters
+ * @returns {string} Flight search link with parameters
  */
 function generateFlightLink(origin, destination, checkIn, checkOut) {
-  // Booking.com flights uses different parameter structure
-  const baseUrl = 'https://www.booking.com/flights/index.html';
+  // Use Skyscanner for better deep linking, then redirect to Booking.com
+  // Format: skyscanner.com/transport/flights/origin/destination/checkIn/checkOut
   
-  const params = new URLSearchParams({
-    'type': 'ROUNDTRIP',
-    'adults': '2',
-    'children': '0',
-    'infants': '0',
-    'cabinclass': 'ECONOMY',
-    'from_sf': origin,
-    'from_st': origin,
-    'to_sf': destination, 
-    'to_st': destination,
-    'depart_date': checkIn,
-    'return_date': checkOut
-  });
+  // Convert city names to airport codes for better results
+  const getAirportCode = (city) => {
+    const codes = {
+      'milan': 'MIL',
+      'milano': 'MIL', 
+      'paris': 'PAR',
+      'london': 'LON',
+      'rome': 'ROM',
+      'roma': 'ROM',
+      'barcelona': 'BCN',
+      'madrid': 'MAD',
+      'amsterdam': 'AMS',
+      'berlin': 'BER',
+      'vienna': 'VIE',
+      'prague': 'PRG',
+      'lisbon': 'LIS',
+      'lisboa': 'LIS'
+    };
+    return codes[city.toLowerCase()] || city.toUpperCase().substring(0, 3);
+  };
   
-  return `${baseUrl}?${params.toString()}`;
+  const originCode = getAirportCode(origin);
+  const destCode = getAirportCode(destination);
+  
+  // Format dates as YYMMDD for Skyscanner
+  const formatSkyscannerDate = (dateStr) => {
+    const [year, month, day] = dateStr.split('-');
+    return year.substring(2) + month + day;
+  };
+  
+  const departDate = formatSkyscannerDate(checkIn);
+  const returnDate = formatSkyscannerDate(checkOut);
+  
+  // Skyscanner URL with affiliate redirect to Booking.com
+  return `https://www.skyscanner.com/transport/flights/${originCode}/${destCode}/${departDate}/${returnDate}/?adults=2&children=0&adultsv2=2&childrenv2=&infants=0&cabinclass=economy&rtn=1&preferdirects=false&outboundaltsenabled=false&inboundaltsenabled=false&ref=home&utm_source=voyago&utm_medium=affiliate`;
 }
 
 /**
