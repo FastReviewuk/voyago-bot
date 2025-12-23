@@ -16,58 +16,32 @@ async function generateDetailedTravelGuide(city, travelerType, interests, checkI
   const endDate = new Date(checkOut);
   const duration = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
   
-  // Calculate daily budget and budget level
+  // Calculate budget and currency
   const budgetAmount = budget && budget !== 'undefined' ? parseInt(budget.replace(/[^0-9]/g, '')) : 1000;
   const dailyBudget = Math.round(budgetAmount / duration);
-  const budgetLevel = dailyBudget < 50 ? 'budget' : dailyBudget < 100 ? 'mid-range' : 'luxury';
+  const currency = budget && budget.includes('£') ? 'GBP' : budget && budget.includes('$') ? 'USD' : 'EUR';
+  const currencySymbol = currency === 'GBP' ? '£' : currency === 'USD' ? '$' : '€';
   
-  const prompt = `You are a local expert travel guide who has lived in ${city} for years. Create a comprehensive, specific travel guide for a ${travelerType} traveler interested in ${interests}, staying for ${duration} days with a ${budgetLevel} budget (${budget} total, €${dailyBudget} per day).
+  const prompt = `You are a smart, concise travel assistant. Create a compact but essential tourist guide for ${city}, tailored to a trip of ${duration} days and a total budget of ${budgetAmount} ${currency} (including accommodation, food, transport, and attractions).
 
-CRITICAL: Be extremely specific about ${city}. Include real places, actual restaurant names, specific neighborhoods, exact prices, and local insider knowledge.
+Your output must include:
 
-Structure your response EXACTLY like this:
+A brief overview of the city (2–3 sentences highlighting vibe, culture, and must-know tips).
 
-DESTINATION OVERVIEW: Write 2-3 sentences about what makes ${city} unique and special. Mention specific landmarks or characteristics.
+A day-by-day itinerary (morning, afternoon, evening) with:
+- Top 2–3 essential attractions or experiences per day
+- Estimated time needed and opening hours (if relevant)
+- Practical notes (e.g., "book in advance," "free entry on Sundays")
 
-KEY INFORMATION: Currency, language, best months to visit, main transportation (with specific costs), key cultural tips for ${city}.
+Budget breakdown by category (lodging, meals, local transport, attractions).
 
-BUDGET BREAKDOWN (${budget} total, ~€${dailyBudget}/day):
-• Accommodation: Specific price ranges and neighborhood recommendations for ${budgetLevel} travelers
-• Food: Actual meal costs and where to eat in ${city}
-• Transport: Exact daily transport costs and best options
-• Activities: Real attraction prices and ${budgetLevel}-appropriate experiences
+Money-saving tips specific to the city (free walking tours, affordable local eats, transport passes, etc.).
 
-MUST-SEE ATTRACTIONS: List 5 specific attractions in ${city} with:
-- Exact names and locations
-- Real entry prices (or "free")
-- Why each is special
-- ${budgetLevel} tips for each
+One local secret or off-the-beaten-path suggestion that fits the budget.
 
-DAY-BY-DAY ITINERARY: Create a detailed ${duration}-day plan with:
-- Specific morning, afternoon, evening activities
-- Real neighborhood names and locations
-- Actual restaurants and cafes to visit
-- Walking routes and transport connections
-- ${budgetLevel}-appropriate choices throughout
+Keep the language clear, professional, and actionable. Avoid fluff. Prioritize realism, walkability, and seasonal appropriateness. Do not invent prices—use general estimates based on typical low/mid-range traveler spending.
 
-LOCAL TIPS: 3 insider secrets that only locals know about ${city}:
-- Hidden gems tourists miss
-- Money-saving tricks specific to ${city}
-- Cultural etiquette and local customs
-
-FOOD RECOMMENDATIONS: Must-try dishes specific to ${city} and region:
-- Name 5 local specialties
-- Recommend specific restaurants/markets with price ranges
-- Street food options and where to find them
-
-PRACTICAL INFO: ${city}-specific practical advice:
-- Best apps for ${city}
-- Tipping customs
-- Safety considerations
-- Shopping areas and markets
-- Free activities and experiences
-
-Keep everything specific to ${city}. No generic advice. Use real names, places, and prices. Write in a friendly, knowledgeable tone as if you're a local friend giving advice.`;
+Additional context: This is for a ${travelerType} traveler interested in ${interests}. Make recommendations appropriate for this traveler type and interests.`;
 
   try {
     // Try primary AI model first
@@ -84,12 +58,13 @@ Keep everything specific to ${city}. No generic advice. Use real names, places, 
     if (response) {
       const aiResponse = response.trim();
       
-      // Validate that the response is specific and not generic
-      if (aiResponse.includes(city) && aiResponse.length > 500 && !aiResponse.includes('Research free attractions')) {
+      // Validate that the response is specific and useful
+      if (aiResponse.includes(city) && aiResponse.length > 300 && 
+          (aiResponse.includes('day-by-day') || aiResponse.includes('Day 1') || aiResponse.includes('Morning'))) {
         return aiResponse;
       } else {
-        console.log('AI response too generic, using enhanced fallback');
-        throw new Error('AI response too generic');
+        console.log('AI response not specific enough, using enhanced fallback');
+        throw new Error('AI response not specific enough');
       }
     } else {
       throw new Error('All AI models failed');
@@ -117,15 +92,15 @@ async function tryAIModel(model, prompt) {
         messages: [
           {
             role: 'system',
-            content: 'You are a knowledgeable local travel expert who provides specific, detailed, and practical travel advice with real names, places, and prices. Never give generic responses.'
+            content: 'You are a smart, concise travel assistant who provides practical, actionable travel advice. Focus on essential information, realistic budgets, and specific recommendations. Avoid generic responses and prioritize local insights.'
           },
           {
             role: 'user',
             content: prompt
           }
         ],
-        max_tokens: 1500,
-        temperature: 0.3,
+        max_tokens: 1200, // Adjusted for more concise responses
+        temperature: 0.4, // Slightly higher for more natural language
         top_p: 0.9
       },
       {
