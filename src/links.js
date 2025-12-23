@@ -4,7 +4,7 @@
 
 /**
  * Generate Booking.com flight search link with pre-filled data
- * Using the correct Booking.com flights URL structure
+ * Using a simplified URL structure that works reliably with Booking.com
  * @param {string} origin - Origin city
  * @param {string} destination - Destination city
  * @param {string} checkIn - Check-in date (YYYY-MM-DD)
@@ -13,59 +13,37 @@
  * @returns {string} Booking.com flights link with parameters
  */
 function generateFlightLink(origin, destination, checkIn, checkOut, travelerType) {
-  // Get airport codes and country codes for cities
-  const getAirportInfo = (city) => {
+  // Get airport codes for cities
+  const getAirportCode = (city) => {
     const airports = {
       // European cities
-      'milan': { code: 'MXP.AIRPORT', country: 'IT', name: 'Milan+Malpensa+Airport' },
-      'milano': { code: 'MXP.AIRPORT', country: 'IT', name: 'Milan+Malpensa+Airport' },
-      'paris': { code: 'CDG.AIRPORT', country: 'FR', name: 'Paris+Charles+de+Gaulle+Airport' },
-      'london': { code: 'LHR.AIRPORT', country: 'GB', name: 'London+Heathrow+Airport' },
-      'rome': { code: 'FCO.AIRPORT', country: 'IT', name: 'Rome+Fiumicino+Airport' },
-      'roma': { code: 'FCO.AIRPORT', country: 'IT', name: 'Rome+Fiumicino+Airport' },
-      'barcelona': { code: 'BCN.AIRPORT', country: 'ES', name: 'Barcelona+Airport' },
-      'madrid': { code: 'MAD.AIRPORT', country: 'ES', name: 'Madrid+Barajas+Airport' },
-      'amsterdam': { code: 'AMS.AIRPORT', country: 'NL', name: 'Amsterdam+Schiphol+Airport' },
-      'berlin': { code: 'BER.AIRPORT', country: 'DE', name: 'Berlin+Brandenburg+Airport' },
-      'vienna': { code: 'VIE.AIRPORT', country: 'AT', name: 'Vienna+International+Airport' },
-      'prague': { code: 'PRG.AIRPORT', country: 'CZ', name: 'Prague+Airport' },
-      'lisbon': { code: 'LIS.AIRPORT', country: 'PT', name: 'Lisbon+Airport' },
-      'lisboa': { code: 'LIS.AIRPORT', country: 'PT', name: 'Lisbon+Airport' },
-      'venice': { code: 'VCE.AIRPORT', country: 'IT', name: 'Venice+Marco+Polo+Airport' },
-      'venezia': { code: 'VCE.AIRPORT', country: 'IT', name: 'Venice+Marco+Polo+Airport' },
-      'cardiff': { code: 'CWL.AIRPORT', country: 'GB', name: 'Cardiff+Airport' },
-      'manchester': { code: 'MAN.AIRPORT', country: 'GB', name: 'Manchester+Airport' },
-      'dublin': { code: 'DUB.AIRPORT', country: 'IE', name: 'Dublin+Airport' },
-      'zurich': { code: 'ZUR.AIRPORT', country: 'CH', name: 'Zurich+Airport' },
+      'milan': 'MXP', 'milano': 'MXP',
+      'paris': 'CDG',
+      'london': 'LHR',
+      'rome': 'FCO', 'roma': 'FCO',
+      'barcelona': 'BCN',
+      'madrid': 'MAD',
+      'amsterdam': 'AMS',
+      'berlin': 'BER',
+      'vienna': 'VIE',
+      'prague': 'PRG',
+      'lisbon': 'LIS', 'lisboa': 'LIS',
+      'venice': 'VCE', 'venezia': 'VCE',
+      'cardiff': 'CWL',
+      'manchester': 'MAN',
+      'dublin': 'DUB',
+      'zurich': 'ZUR',
       // American cities
-      'new york': { code: 'JFK.AIRPORT', country: 'US', name: 'New+York+JFK+Airport' },
-      'newyork': { code: 'JFK.AIRPORT', country: 'US', name: 'New+York+JFK+Airport' },
-      'nyc': { code: 'JFK.AIRPORT', country: 'US', name: 'New+York+JFK+Airport' },
-      'los angeles': { code: 'LAX.AIRPORT', country: 'US', name: 'Los+Angeles+International+Airport' },
-      'losangeles': { code: 'LAX.AIRPORT', country: 'US', name: 'Los+Angeles+International+Airport' },
-      'la': { code: 'LAX.AIRPORT', country: 'US', name: 'Los+Angeles+International+Airport' },
-      'chicago': { code: 'ORD.AIRPORT', country: 'US', name: 'Chicago+O\'Hare+International+Airport' },
-      'miami': { code: 'MIA.AIRPORT', country: 'US', name: 'Miami+International+Airport' },
-      'las vegas': { code: 'LAS.AIRPORT', country: 'US', name: 'Las+Vegas+McCarran+International+Airport' },
-      'lasvegas': { code: 'LAS.AIRPORT', country: 'US', name: 'Las+Vegas+McCarran+International+Airport' },
-      'vegas': { code: 'LAS.AIRPORT', country: 'US', name: 'Las+Vegas+McCarran+International+Airport' },
-      'san francisco': { code: 'SFO.AIRPORT', country: 'US', name: 'San+Francisco+International+Airport' },
-      'sanfrancisco': { code: 'SFO.AIRPORT', country: 'US', name: 'San+Francisco+International+Airport' },
-      'sf': { code: 'SFO.AIRPORT', country: 'US', name: 'San+Francisco+International+Airport' }
+      'new york': 'JFK', 'newyork': 'JFK', 'nyc': 'JFK',
+      'los angeles': 'LAX', 'losangeles': 'LAX', 'la': 'LAX',
+      'chicago': 'ORD',
+      'miami': 'MIA',
+      'las vegas': 'LAS', 'lasvegas': 'LAS', 'vegas': 'LAS',
+      'san francisco': 'SFO', 'sanfrancisco': 'SFO', 'sf': 'SFO'
     };
     
     const cityKey = city.toLowerCase();
-    if (airports[cityKey]) {
-      return airports[cityKey];
-    }
-    
-    // Default fallback
-    const cityName = city.charAt(0).toUpperCase() + city.slice(1).toLowerCase();
-    return {
-      code: cityName.substring(0, 3).toUpperCase() + '.AIRPORT',
-      country: 'XX',
-      name: cityName.replace(' ', '+') + '+Airport'
-    };
+    return airports[cityKey] || city.substring(0, 3).toUpperCase();
   };
   
   // Determine number of travelers based on type
@@ -73,41 +51,35 @@ function generateFlightLink(origin, destination, checkIn, checkOut, travelerType
     const typeKey = type ? type.toLowerCase() : 'couple';
     switch (typeKey) {
       case 'solo':
-        return { adults: '1', children: '0', infants: '0' };
+        return { adults: 1, children: 0 };
       case 'couple':
-        return { adults: '2', children: '0', infants: '0' };
+        return { adults: 2, children: 0 };
       case 'family':
-        return { adults: '2', children: '1', infants: '1' }; // Adjusted for realistic family
+        return { adults: 2, children: 2 };
       case 'friends':
-        return { adults: '3', children: '0', infants: '0' }; // Adjusted to 3 friends
+        return { adults: 3, children: 0 };
       default:
-        return { adults: '2', children: '0', infants: '0' };
+        return { adults: 2, children: 0 };
     }
   };
   
-  const originInfo = getAirportInfo(origin);
-  const destInfo = getAirportInfo(destination);
+  const originCode = getAirportCode(origin);
+  const destCode = getAirportCode(destination);
   const travelers = getTravelerCount(travelerType);
   
-  // Build the URL using Booking.com flights format
-  const baseUrl = `https://flights.booking.com/flights/${originInfo.code}-${destInfo.code}/`;
+  // Use Booking.com's simplified flight search URL
+  const baseUrl = 'https://www.booking.com/flights/';
   
   const params = new URLSearchParams({
-    'type': 'ROUNDTRIP',
-    'adults': travelers.adults,
-    'cabinClass': 'ECONOMY',
-    'children': travelers.children,
-    'infants': travelers.infants,
-    'from': originInfo.code,
-    'to': destInfo.code,
-    'fromCountry': originInfo.country,
-    'toCountry': destInfo.country,
-    'fromLocationName': originInfo.name,
-    'toLocationName': destInfo.name,
+    'aid': '304142', // Booking.com affiliate ID placeholder
+    'from_sf': originCode,
+    'to_sf': destCode,
     'depart': checkIn,
     'return': checkOut,
-    'sort': 'BEST',
-    'travelPurpose': 'leisure'
+    'adults': travelers.adults.toString(),
+    'children': travelers.children.toString(),
+    'cabinclass': 'economy',
+    'type': 'roundtrip'
   });
   
   return `${baseUrl}?${params.toString()}`;
@@ -131,7 +103,7 @@ function generateHotelLink(city, checkIn, checkOut, travelerType) {
       case 'couple':
         return { adults: '2', children: '0', rooms: '1' };
       case 'family':
-        return { adults: '2', children: '2', rooms: '1' }; // Keep 2 children for hotel
+        return { adults: '2', children: '2', rooms: '1' };
       case 'friends':
         return { adults: '3', children: '0', rooms: '2' }; // 3 friends, 2 rooms
       default:
@@ -181,29 +153,45 @@ function generateTravelServices(city, interests, checkIn = null, checkOut = null
     description: `Tickets for events in ${city}`
   });
   
-  // Tiqets with proper city-specific URLs
+  // Tiqets with proper city-specific URLs using c71506 format for European cities
   const getTiqetsLink = (city) => {
     const cityMappings = {
-      // European cities
-      'venice': 'venice-attractions-c71510',
+      // European cities - using c71506 as default code
+      'venice': 'venice-attractions-c71510', // Keep specific code for Venice
       'venezia': 'venice-attractions-c71510',
-      'paris': 'paris-attractions-c75',
-      'rome': 'rome-attractions-c71631',
+      'rome': 'rome-attractions-c71631', // Keep specific code for Rome
       'roma': 'rome-attractions-c71631',
-      'barcelona': 'barcelona-attractions-c76',
-      'madrid': 'madrid-attractions-c77',
-      'amsterdam': 'amsterdam-attractions-c78',
-      'london': 'london-attractions-c79',
-      'berlin': 'berlin-attractions-c80',
-      'milan': 'milan-attractions-c81',
-      'milano': 'milan-attractions-c81',
-      'florence': 'florence-attractions-c82',
-      'firenze': 'florence-attractions-c82',
-      'vienna': 'vienna-attractions-c83',
-      'prague': 'prague-attractions-c84',
-      'lisbon': 'lisbon-attractions-c85',
-      'lisboa': 'lisbon-attractions-c85',
-      // American cities
+      'paris': 'paris-attractions-c71506',
+      'barcelona': 'barcelona-attractions-c71506',
+      'madrid': 'madrid-attractions-c71506',
+      'amsterdam': 'amsterdam-attractions-c71506',
+      'london': 'london-attractions-c71506',
+      'berlin': 'berlin-attractions-c71506',
+      'milan': 'milan-attractions-c71506',
+      'milano': 'milan-attractions-c71506',
+      'florence': 'florence-attractions-c71506',
+      'firenze': 'florence-attractions-c71506',
+      'vienna': 'vienna-attractions-c71506',
+      'prague': 'prague-attractions-c71506',
+      'lisbon': 'lisbon-attractions-c71506',
+      'lisboa': 'lisbon-attractions-c71506',
+      'brussels': 'brussels-attractions-c71506',
+      'bruxelles': 'brussels-attractions-c71506',
+      'zurich': 'zurich-attractions-c71506',
+      'geneva': 'geneva-attractions-c71506',
+      'dublin': 'dublin-attractions-c71506',
+      'edinburgh': 'edinburgh-attractions-c71506',
+      'munich': 'munich-attractions-c71506',
+      'munchen': 'munich-attractions-c71506',
+      'copenhagen': 'copenhagen-attractions-c71506',
+      'stockholm': 'stockholm-attractions-c71506',
+      'oslo': 'oslo-attractions-c71506',
+      'helsinki': 'helsinki-attractions-c71506',
+      'athens': 'athens-attractions-c71506',
+      'budapest': 'budapest-attractions-c71506',
+      'krakow': 'krakow-attractions-c71506',
+      'warsaw': 'warsaw-attractions-c71506',
+      // American cities - keep specific codes
       'new york': 'new-york-attractions-c260932',
       'newyork': 'new-york-attractions-c260932',
       'nyc': 'new-york-attractions-c260932',
@@ -221,7 +209,7 @@ function generateTravelServices(city, interests, checkIn = null, checkOut = null
     };
     
     const cityKey = city.toLowerCase();
-    const cityPath = cityMappings[cityKey] || `${city.toLowerCase().replace(' ', '-')}-attractions`;
+    const cityPath = cityMappings[cityKey] || `${city.toLowerCase().replace(' ', '-')}-attractions-c71506`;
     
     return `https://www.tiqets.com/en/${cityPath}/?partner=travelpayouts.com&tq_campaign=voyago-bot&tq_click_id=voyago-${Date.now()}`;
   };
