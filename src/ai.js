@@ -1,4 +1,5 @@
 const axios = require('axios');
+const { getWorldHeritageCityGuide } = require('./world-heritage-cities');
 
 /**
  * Generate detailed travel guide using OpenRouter AI
@@ -164,6 +165,18 @@ function getDetailedFallbackGuide(city, travelerType, interests, duration, budge
   const displayBudget = budget && budget !== 'undefined' ? budget : '€1000 (estimated)';
   const displayDaily = budget && budget !== 'undefined' ? `€${dailyBudget}` : '€140';
   
+  // First, try World Heritage Cities system
+  const worldHeritageGuide = getWorldHeritageCityGuide(
+    city, travelerType, interests, duration, budget, 
+    displayBudget, displayDaily, budgetLevel
+  );
+  
+  if (worldHeritageGuide) {
+    console.log(`Using World Heritage guide for ${city}`);
+    return worldHeritageGuide;
+  }
+  
+  // Fallback to existing specific guides
   const guides = {
     'singapore': `OVERVIEW: Singapore is a vibrant city-state blending futuristic architecture with rich cultural heritage, world-class street food, and tropical gardens. This ultra-modern metropolis offers efficient transport, diverse neighborhoods, and experiences from luxury shopping to authentic hawker centers.
 
