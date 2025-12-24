@@ -2,6 +2,38 @@ const axios = require('axios');
 const { getWorldHeritageCityGuide } = require('./world-heritage-cities');
 
 /**
+ * Get specific guidance based on user interests
+ * @param {string} interests - User interests (Culture, Food, Nature, Beach, Nightlife)
+ * @returns {string} Specific guidance for the AI
+ */
+function getInterestGuidance(interests) {
+  const interestsList = interests.toLowerCase();
+  let guidance = [];
+  
+  if (interestsList.includes('culture')) {
+    guidance.push('- CULTURE: Focus on museums, historical sites, art galleries, architectural landmarks, cultural districts, traditional performances, religious sites, and local heritage experiences');
+  }
+  
+  if (interestsList.includes('food')) {
+    guidance.push('- FOOD: Emphasize local cuisine, food markets, cooking classes, food tours, traditional restaurants, street food, local specialties, wine/beer tastings, and culinary experiences');
+  }
+  
+  if (interestsList.includes('nature')) {
+    guidance.push('- NATURE: Prioritize parks, gardens, hiking trails, natural landmarks, outdoor activities, scenic viewpoints, wildlife experiences, and eco-tourism');
+  }
+  
+  if (interestsList.includes('beach')) {
+    guidance.push('- BEACH: Focus on coastal areas, beach activities, water sports, seaside restaurants, beach clubs, coastal walks, and marine experiences');
+  }
+  
+  if (interestsList.includes('nightlife')) {
+    guidance.push('- NIGHTLIFE: Emphasize bars, clubs, live music venues, entertainment districts, evening activities, rooftop bars, local nightlife culture, and after-dark experiences');
+  }
+  
+  return guidance.length > 0 ? guidance.join('\n') : '- Provide a balanced mix of attractions and experiences';
+}
+
+/**
  * Generate detailed travel guide using OpenRouter AI
  * @param {string} city - Destination city
  * @param {string} travelerType - Type of traveler (Solo/Couple/Family/Friends)
@@ -26,20 +58,24 @@ async function generateDetailedTravelGuide(city, travelerType, interests, checkI
   const prompt = `You are a smart, concise travel assistant. Create a compact but essential tourist guide for ${city}, tailored to a trip of ${duration} days and a total budget of ${budgetAmount} ${currency} (including accommodation, food, transport, and attractions).
 
 CRITICAL REQUIREMENTS:
+- You MUST tailor ALL recommendations to the traveler's interests: ${interests}
 - You MUST include specific attraction names, restaurant names, and neighborhood names for ${city}
 - You MUST include realistic price estimates for ${city}
-- You MUST provide a detailed day-by-day itinerary with specific activities
+- You MUST provide a detailed day-by-day itinerary with specific activities focused on ${interests}
 - You MUST mention local food specialties specific to ${city}
-- DO NOT give generic advice - everything must be specific to ${city}
+- DO NOT give generic advice - everything must be specific to ${city} AND aligned with ${interests}
+
+INTEREST-FOCUSED CUSTOMIZATION:
+${getInterestGuidance(interests)}
 
 Your output must include:
 
-OVERVIEW: A brief overview of ${city} (2–3 sentences highlighting vibe, culture, and must-know tips specific to this city).
+OVERVIEW: A brief overview of ${city} (2–3 sentences highlighting vibe, culture, and must-know tips specific to this city, emphasizing aspects relevant to ${interests}).
 
 DAY-BY-DAY ITINERARY: For each of the ${duration} days, provide:
-Morning: Specific attraction/activity with name, estimated cost, and time needed
-Afternoon: Specific attraction/activity with name, estimated cost, and time needed  
-Evening: Specific restaurant/area recommendation with name and price range
+Morning: Specific attraction/activity with name, estimated cost, and time needed (prioritize ${interests})
+Afternoon: Specific attraction/activity with name, estimated cost, and time needed (prioritize ${interests})
+Evening: Specific restaurant/area recommendation with name and price range (consider ${interests})
 Include practical notes (opening hours, booking requirements, transport between locations)
 
 BUDGET BREAKDOWN: Realistic daily costs for ${city}:
@@ -172,7 +208,7 @@ function getDetailedFallbackGuide(city, travelerType, interests, duration, budge
   );
   
   if (worldHeritageGuide) {
-    console.log(`Using World Heritage guide for ${city}`);
+    console.log(`Using World Heritage guide for ${city} tailored to ${interests}`);
     return worldHeritageGuide;
   }
   
@@ -461,27 +497,44 @@ PRACTICAL INFO: ${budgetLevel === 'budget' ? 'Contactless payment widely accepte
   }
 
   // Enhanced generic fallback with actionable structure
-  return `OVERVIEW: ${city} offers diverse experiences for ${travelerType} travelers interested in ${interests}. This destination combines cultural attractions, local cuisine, and authentic experiences within your ${displayBudget} budget.
+  const interestsList = interests ? interests.toLowerCase() : '';
+  let interestFocus = '';
+  
+  if (interestsList.includes('culture')) {
+    interestFocus = 'Focus on museums, historical sites, cultural districts, and local heritage experiences.';
+  } else if (interestsList.includes('food')) {
+    interestFocus = 'Emphasize local cuisine, food markets, traditional restaurants, and culinary experiences.';
+  } else if (interestsList.includes('nightlife')) {
+    interestFocus = 'Prioritize entertainment districts, bars, live music venues, and evening activities.';
+  } else if (interestsList.includes('nature')) {
+    interestFocus = 'Focus on parks, gardens, outdoor activities, and natural landmarks.';
+  } else if (interestsList.includes('beach')) {
+    interestFocus = 'Emphasize coastal areas, beach activities, and seaside experiences.';
+  } else {
+    interestFocus = 'Provide a balanced mix of cultural, culinary, and recreational experiences.';
+  }
+
+  return `OVERVIEW: ${city} offers diverse experiences for ${travelerType} travelers interested in ${interests}. This destination combines cultural attractions, local cuisine, and authentic experiences within your ${displayBudget} budget. ${interestFocus}
 
 DAY-BY-DAY ITINERARY: 
-Day 1: Morning - Explore ${city}'s historic center and main landmarks (research top-rated attractions on TripAdvisor). Afternoon - Visit the main cultural district and local markets. Evening - Try traditional ${city} cuisine at highly-rated local restaurants.
-Day 2: Morning - Visit ${city}'s most famous museum or cultural site. Afternoon - Explore a different neighborhood known for local life. Evening - Experience ${city}'s nightlife or entertainment district.
-${duration > 2 ? `Day 3: Morning - Take a walking tour or visit parks/gardens. Afternoon - Shopping district or artisan areas. Evening - Local food market or cooking experience.` : ''}
-${duration > 3 ? `Day 4: Day trip to nearby attractions or deeper exploration of ${city}'s outskirts and local neighborhoods.` : ''}
+Day 1: Morning - Explore ${city}'s ${interestsList.includes('culture') ? 'main cultural sites and museums' : interestsList.includes('food') ? 'local food markets and culinary districts' : interestsList.includes('nightlife') ? 'city center and entertainment areas' : interestsList.includes('nature') ? 'main parks and natural areas' : interestsList.includes('beach') ? 'coastal areas and beaches' : 'historic center and main landmarks'}. Afternoon - Visit ${interestsList.includes('culture') ? 'art galleries and cultural districts' : interestsList.includes('food') ? 'traditional restaurants and food experiences' : interestsList.includes('nightlife') ? 'trendy neighborhoods and bars' : interestsList.includes('nature') ? 'botanical gardens or scenic viewpoints' : interestsList.includes('beach') ? 'beach clubs and coastal walks' : 'local markets and neighborhoods'}. Evening - Experience ${interestsList.includes('culture') ? 'traditional performances or cultural shows' : interestsList.includes('food') ? 'local cuisine at highly-rated restaurants' : interestsList.includes('nightlife') ? 'local nightlife and entertainment venues' : interestsList.includes('nature') ? 'sunset views and outdoor dining' : interestsList.includes('beach') ? 'beachside dining and sunset views' : 'local dining and evening atmosphere'}.
+Day 2: Morning - ${interestsList.includes('culture') ? 'Visit main museums and historical sites' : interestsList.includes('food') ? 'Take a food tour or cooking class' : interestsList.includes('nightlife') ? 'Explore daytime markets and prepare for evening' : interestsList.includes('nature') ? 'Outdoor activities and nature experiences' : interestsList.includes('beach') ? 'Beach activities and water sports' : 'Explore different neighborhoods'}. Afternoon - ${interestsList.includes('culture') ? 'Explore heritage districts and monuments' : interestsList.includes('food') ? 'Visit specialty food shops and markets' : interestsList.includes('nightlife') ? 'Discover rooftop bars and lounges' : interestsList.includes('nature') ? 'Hiking trails or nature reserves' : interestsList.includes('beach') ? 'Coastal exploration and beach relaxation' : 'Shopping and local experiences'}. Evening - ${interestsList.includes('culture') ? 'Attend cultural events or festivals' : interestsList.includes('food') ? 'Fine dining or street food experiences' : interestsList.includes('nightlife') ? 'Club hopping and live music venues' : interestsList.includes('nature') ? 'Outdoor evening activities' : interestsList.includes('beach') ? 'Beach bars and coastal nightlife' : 'Local entertainment and dining'}.
+${duration > 2 ? `Day 3: Morning - ${interestsList.includes('culture') ? 'Cultural workshops or guided heritage tours' : interestsList.includes('food') ? 'Market visits and food tastings' : interestsList.includes('nightlife') ? 'Recovery day with cafés and light activities' : interestsList.includes('nature') ? 'Day trips to natural attractions' : interestsList.includes('beach') ? 'Island hopping or coastal excursions' : 'Day trips or deeper city exploration'}. Afternoon - ${interestsList.includes('culture') ? 'Artisan workshops and cultural centers' : interestsList.includes('food') ? 'Cooking experiences and wine tastings' : interestsList.includes('nightlife') ? 'Prepare for final night celebrations' : interestsList.includes('nature') ? 'Eco-tourism and wildlife experiences' : interestsList.includes('beach') ? 'Beach sports and seaside activities' : 'Local experiences and shopping'}. Evening - ${interestsList.includes('culture') ? 'Traditional ceremonies or cultural immersion' : interestsList.includes('food') ? 'Farewell dinner at signature restaurant' : interestsList.includes('nightlife') ? 'Epic final night out experience' : interestsList.includes('nature') ? 'Stargazing or nature night tours' : interestsList.includes('beach') ? 'Beach bonfire or seaside farewell' : 'Memorable final evening experience'}.` : ''}
+${duration > 3 ? `Day 4: ${interestsList.includes('culture') ? 'Day trip to nearby cultural sites or UNESCO locations' : interestsList.includes('food') ? 'Regional food tour or wine country visit' : interestsList.includes('nightlife') ? 'Explore neighboring cities\' nightlife scenes' : interestsList.includes('nature') ? 'Multi-day nature expedition or national parks' : interestsList.includes('beach') ? 'Extended coastal exploration or island adventures' : 'Extended exploration of surrounding areas'}.` : ''}
 
 BUDGET BREAKDOWN (${displayBudget} total, ~${displayDaily} per day):
 • Accommodation: ${budgetLevel === 'budget' ? 'Hostels, guesthouses, budget hotels (€25-50/night)' : budgetLevel === 'mid-range' ? 'Mid-range hotels, boutique properties (€60-120/night)' : 'Luxury hotels, premium locations (€150-300/night)'}
-• Food: ${budgetLevel === 'budget' ? 'Street food, local markets, casual dining (€15-30/day)' : budgetLevel === 'mid-range' ? 'Mix of local restaurants and some fine dining (€30-60/day)' : 'Fine dining, premium restaurants (€60-120/day)'}
+• Food: ${budgetLevel === 'budget' ? interestsList.includes('food') ? 'Street food, local markets, food tours (€20-35/day)' : 'Street food, local markets, casual dining (€15-30/day)' : budgetLevel === 'mid-range' ? interestsList.includes('food') ? 'Food tours, cooking classes, restaurant dining (€40-70/day)' : 'Mix of local restaurants and some fine dining (€30-60/day)' : interestsList.includes('food') ? 'Fine dining, premium culinary experiences (€80-150/day)' : 'Fine dining, premium restaurants (€60-120/day)'}
 • Transport: ${budgetLevel === 'budget' ? 'Public transport, walking (€5-15/day)' : budgetLevel === 'mid-range' ? 'Public transport plus occasional taxis (€10-25/day)' : 'Taxis, private transfers (€20-50/day)'}
-• Activities: ${budgetLevel === 'budget' ? 'Free attractions, some museums (€10-25/day)' : budgetLevel === 'mid-range' ? 'Mix of free and paid attractions (€20-40/day)' : 'Premium tours, exclusive experiences (€40-80/day)'}
+• Activities: ${budgetLevel === 'budget' ? interestsList.includes('culture') ? 'Museums, cultural sites, free events (€15-30/day)' : interestsList.includes('nightlife') ? 'Bars, clubs, entertainment (€20-40/day)' : interestsList.includes('nature') ? 'Parks, hiking, outdoor activities (€10-25/day)' : 'Free attractions, some museums (€10-25/day)' : budgetLevel === 'mid-range' ? interestsList.includes('culture') ? 'Museums, tours, cultural experiences (€25-50/day)' : interestsList.includes('nightlife') ? 'Premium bars, clubs, shows (€35-70/day)' : interestsList.includes('nature') ? 'Guided tours, outdoor experiences (€20-40/day)' : 'Mix of free and paid attractions (€20-40/day)' : interestsList.includes('culture') ? 'Private tours, exclusive cultural experiences (€50-100/day)' : interestsList.includes('nightlife') ? 'VIP experiences, premium venues (€70-150/day)' : interestsList.includes('nature') ? 'Private guides, luxury outdoor experiences (€60-120/day)' : 'Premium tours, exclusive experiences (€40-80/day)'}
 
-MONEY-SAVING TIPS: Look for free walking tours in ${city}. Eat where locals eat for authentic and affordable meals. Check for museum free days or city tourist cards. Use public transport instead of taxis.
+MONEY-SAVING TIPS: ${interestsList.includes('food') ? `Look for food markets and street vendors for authentic and affordable meals. Many cities have food tour discounts for groups.` : interestsList.includes('culture') ? `Many museums offer free days or student discounts. Look for cultural festivals and free events.` : interestsList.includes('nightlife') ? `Happy hours and early evening specials can save money. Pre-drinking at accommodations is common.` : interestsList.includes('nature') ? `Many natural attractions are free. Pack snacks and water for outdoor activities.` : `Look for free walking tours and city tourist cards for attraction discounts.`} Use public transport instead of taxis when possible.
 
-LOCAL FOOD: Research ${city}'s signature dishes and local specialties. Visit local markets for fresh ingredients and street food. Ask your accommodation for restaurant recommendations away from tourist areas.
+LOCAL FOOD: Research ${city}'s signature dishes and specialties${interestsList.includes('food') ? '. Focus on food markets, cooking classes, and food tours for authentic culinary experiences. Ask locals for their favorite hidden food gems.' : '. Visit local markets for fresh ingredients and street food. Ask your accommodation for restaurant recommendations away from tourist areas.'}
 
-LOCAL SECRET: Explore residential neighborhoods in ${city} for authentic local life, hidden cafes, and better prices. Check local event listings for festivals or cultural events during your visit.
+LOCAL SECRET: ${interestsList.includes('culture') ? `Explore residential cultural districts for authentic local art scenes and community events away from tourist areas.` : interestsList.includes('food') ? `Ask locals about family-run restaurants and hidden food markets that tourists rarely discover.` : interestsList.includes('nightlife') ? `Local nightlife often starts later than tourist areas - follow where young locals go for authentic experiences.` : interestsList.includes('nature') ? `Early morning visits to natural areas offer the best wildlife viewing and fewer crowds.` : `Explore residential neighborhoods for authentic local life, hidden cafes, and better prices.`} Check local event listings for festivals or cultural events during your visit.
 
-PRACTICAL INFO: Download offline maps and translation apps for ${city}. Research local customs, tipping practices, and basic phrases. Check opening hours for major attractions and book popular sites in advance.`;
+PRACTICAL INFO: Download offline maps and translation apps for ${city}. Research local customs, tipping practices, and basic phrases. ${interestsList.includes('culture') ? 'Check opening hours for museums and cultural sites, and book popular attractions in advance.' : interestsList.includes('food') ? 'Research food safety practices and dietary restrictions. Many food tours can accommodate special diets.' : interestsList.includes('nightlife') ? 'Research local nightlife customs, dress codes, and safety considerations for late-night activities.' : interestsList.includes('nature') ? 'Check weather conditions and pack appropriate gear for outdoor activities.' : 'Check opening hours for major attractions and book popular sites in advance.'}`;
 }
 
 module.exports = {

@@ -20,18 +20,18 @@ function getWorldHeritageCityGuide(city, travelerType, interests, duration, budg
   
   const worldHeritageCities = {
     // EUROPE - Major Heritage Cities
-    'prague': generatePragueGuide(displayBudget, displayDaily, budgetLevel, duration),
-    'krakow': generateKrakowGuide(displayBudget, displayDaily, budgetLevel, duration),
-    'cracow': generateKrakowGuide(displayBudget, displayDaily, budgetLevel, duration),
-    'budapest': generateBudapestGuide(displayBudget, displayDaily, budgetLevel, duration),
-    'vienna': generateViennaGuide(displayBudget, displayDaily, budgetLevel, duration),
-    'salzburg': generateSalzburgGuide(displayBudget, displayDaily, budgetLevel, duration),
-    'bruges': generateBrugesGuide(displayBudget, displayDaily, budgetLevel, duration),
-    'brugge': generateBrugesGuide(displayBudget, displayDaily, budgetLevel, duration),
-    'ghent': generateGhentGuide(displayBudget, displayDaily, budgetLevel, duration),
-    'gent': generateGhentGuide(displayBudget, displayDaily, budgetLevel, duration),
-    'porto': generatePortoGuide(displayBudget, displayDaily, budgetLevel, duration),
-    'oporto': generatePortoGuide(displayBudget, displayDaily, budgetLevel, duration),
+    'prague': generatePragueGuide(displayBudget, displayDaily, budgetLevel, duration, interests),
+    'krakow': generateKrakowGuide(displayBudget, displayDaily, budgetLevel, duration, interests),
+    'cracow': generateKrakowGuide(displayBudget, displayDaily, budgetLevel, duration, interests),
+    'budapest': generateBudapestGuide(displayBudget, displayDaily, budgetLevel, duration, interests),
+    'vienna': generateViennaGuide(displayBudget, displayDaily, budgetLevel, duration, interests),
+    'salzburg': generateSalzburgGuide(displayBudget, displayDaily, budgetLevel, duration, interests),
+    'bruges': generateBrugesGuide(displayBudget, displayDaily, budgetLevel, duration, interests),
+    'brugge': generateBrugesGuide(displayBudget, displayDaily, budgetLevel, duration, interests),
+    'ghent': generateGhentGuide(displayBudget, displayDaily, budgetLevel, duration, interests),
+    'gent': generateGhentGuide(displayBudget, displayDaily, budgetLevel, duration, interests),
+    'porto': generatePortoGuide(displayBudget, displayDaily, budgetLevel, duration, interests),
+    'oporto': generatePortoGuide(displayBudget, displayDaily, budgetLevel, duration, interests),
     'santiago de compostela': generateSantiagoGuide(displayBudget, displayDaily, budgetLevel, duration),
     'santiago': generateSantiagoGuide(displayBudget, displayDaily, budgetLevel, duration),
     'toledo': generateToledoGuide(displayBudget, displayDaily, budgetLevel, duration),
@@ -55,7 +55,8 @@ function getWorldHeritageCityGuide(city, travelerType, interests, duration, budg
     'rothenburg': generateRothenburgGuide(displayBudget, displayDaily, budgetLevel, duration),
     
     // ASIA - Major Heritage Cities
-    'kyoto': generateKyotoGuide(displayBudget, displayDaily, budgetLevel, duration),
+    'singapore': generateSingaporeGuide(displayBudget, displayDaily, budgetLevel, duration, interests),
+    'kyoto': generateKyotoGuide(displayBudget, displayDaily, budgetLevel, duration, interests),
     'nara': generateNaraGuide(displayBudget, displayDaily, budgetLevel, duration),
     'luang prabang': generateLuangPrabangGuide(displayBudget, displayDaily, budgetLevel, duration),
     'hoi an': generateHoiAnGuide(displayBudget, displayDaily, budgetLevel, duration),
@@ -145,13 +146,50 @@ function getWorldHeritageCityGuide(city, travelerType, interests, duration, budg
 }
 
 // EUROPEAN CITIES GUIDES
-function generatePragueGuide(displayBudget, displayDaily, budgetLevel, duration) {
-  return `OVERVIEW: Prague, the "City of a Hundred Spires," enchants with its Gothic and Baroque architecture, medieval Old Town, and vibrant cultural scene. This UNESCO World Heritage city offers fairy-tale castles, world-class beer, and authentic Central European charm at excellent value.
+function generatePragueGuide(displayBudget, displayDaily, budgetLevel, duration, interests) {
+  const interestsList = interests ? interests.toLowerCase() : '';
+  
+  // Customize overview based on interests
+  let overview = `Prague, the "City of a Hundred Spires," enchants with its Gothic and Baroque architecture, medieval Old Town, and vibrant cultural scene.`;
+  
+  if (interestsList.includes('culture')) {
+    overview += ` This UNESCO World Heritage city offers world-class museums, classical concerts, and rich history perfect for culture enthusiasts.`;
+  } else if (interestsList.includes('food')) {
+    overview += ` This UNESCO World Heritage city offers traditional Czech cuisine, world-famous beer culture, and authentic local dining experiences.`;
+  } else if (interestsList.includes('nightlife')) {
+    overview += ` This UNESCO World Heritage city offers legendary beer halls, vibrant nightlife districts, and authentic pub culture.`;
+  } else {
+    overview += ` This UNESCO World Heritage city offers fairy-tale castles, world-class beer, and authentic Central European charm at excellent value.`;
+  }
+
+  // Customize itinerary based on interests
+  let day1, day2, day3;
+  
+  if (interestsList.includes('culture')) {
+    day1 = `Day 1: Morning - Prague Castle complex (€12, 3 hours) including St. Vitus Cathedral and Old Royal Palace. Afternoon - National Gallery at Sternberg Palace (€8) and Lesser Town baroque architecture. Evening - Classical concert at Rudolfinum or Municipal House (€20-40).`;
+    day2 = `Day 2: Morning - Old Town Square with Astronomical Clock and Týn Church (free). Afternoon - Jewish Quarter museums and synagogues (€13). Evening - Traditional Czech dinner with folk show (€25-35).`;
+    day3 = duration > 2 ? `Day 3: Morning - Wenceslas Square and National Museum (€8). Afternoon - Vyšehrad fortress and Slavín cemetery (€2). Evening - Opera or ballet at National Theatre (€15-50).` : '';
+  } else if (interestsList.includes('food')) {
+    day1 = `Day 1: Morning - Prague Castle complex (€12, 3 hours). Afternoon - Food tour of Old Town including traditional restaurants (€35). Evening - Beer tasting at U Fleků brewery (€15-25).`;
+    day2 = `Day 2: Morning - Wenceslas Square and food market at Havelské Tržiště. Afternoon - Cooking class for traditional Czech dishes (€45). Evening - Traditional beer hall dinner at Lokál (€15-25).`;
+    day3 = duration > 2 ? `Day 3: Morning - Brewery tour at Pilsner Urquell (€15). Afternoon - Czech wine tasting in Vinohrady district (€20-30). Evening - Fine dining at modern Czech restaurant (€40-60).` : '';
+  } else if (interestsList.includes('nightlife')) {
+    day1 = `Day 1: Morning - Prague Castle complex (€12, 3 hours). Afternoon - Lesser Town and Charles Bridge (free). Evening - Pub crawl in Old Town starting at U Fleků (€20-30).`;
+    day2 = `Day 2: Morning - Old Town Square and Astronomical Clock (free). Afternoon - Wenceslas Square shopping and cafés. Evening - Nightlife in Vinohrady - cocktail bars and clubs (€25-40).`;
+    day3 = duration > 2 ? `Day 3: Morning - Vyšehrad fortress (€2). Afternoon - Karlín district trendy bars and cafés. Evening - Rooftop bars with city views and late-night dancing (€30-50).` : '';
+  } else {
+    // Default balanced itinerary
+    day1 = `Day 1: Morning - Prague Castle complex (€12, 3 hours) including St. Vitus Cathedral. Afternoon - Lesser Town and Charles Bridge (free). Evening - Traditional Czech dinner in Old Town (€15-25).`;
+    day2 = `Day 2: Morning - Old Town Square with Astronomical Clock (free) and Týn Church. Afternoon - Jewish Quarter and synagogues (€13). Evening - Beer tasting in traditional pub (€8-15).`;
+    day3 = duration > 2 ? `Day 3: Morning - Wenceslas Square and National Museum (€8). Afternoon - Vyšehrad fortress and cemetery (€2). Evening - Classical concert in historic venue (€20-40).` : '';
+  }
+
+  return `OVERVIEW: ${overview}
 
 DAY-BY-DAY ITINERARY:
-Day 1: Morning - Prague Castle complex (€12, 3 hours) including St. Vitus Cathedral. Afternoon - Lesser Town and Charles Bridge (free). Evening - Traditional Czech dinner in Old Town (€15-25).
-Day 2: Morning - Old Town Square with Astronomical Clock (free) and Týn Church. Afternoon - Jewish Quarter and synagogues (€13). Evening - Beer tasting in traditional pub (€8-15).
-Day 3: Morning - Wenceslas Square and National Museum (€8). Afternoon - Vyšehrad fortress and cemetery (€2). Evening - Classical concert in historic venue (€20-40).
+${day1}
+${day2}
+${day3}
 ${duration > 3 ? `Day 4: Day trip to Český Krumlov (€15 train) - medieval town exploration. Evening - Return to Prague.` : ''}
 
 BUDGET BREAKDOWN (${displayBudget} total, ~${displayDaily}/day):
@@ -310,7 +348,77 @@ PRACTICAL INFO: Euro currency. Very walkable or bikeable city. Tipping 10% appre
 
 // ASIAN CITIES GUIDES
 
-function generateKyotoGuide(displayBudget, displayDaily, budgetLevel, duration) {
+function generateSingaporeGuide(displayBudget, displayDaily, budgetLevel, duration, interests) {
+  const interestsList = interests ? interests.toLowerCase() : '';
+  
+  // Customize overview based on interests
+  let overview = `Singapore is a vibrant city-state blending futuristic architecture with rich cultural heritage.`;
+  
+  if (interestsList.includes('culture')) {
+    overview += ` This multicultural metropolis offers incredible museums, diverse ethnic quarters, and unique fusion of Asian cultures perfect for cultural exploration.`;
+  } else if (interestsList.includes('food')) {
+    overview += ` This culinary paradise offers world-class hawker centers, Michelin-starred street food, and incredible fusion cuisine from across Asia.`;
+  } else if (interestsList.includes('nightlife')) {
+    overview += ` This cosmopolitan city offers rooftop bars, vibrant nightlife districts, and sophisticated entertainment venues with stunning skyline views.`;
+  } else if (interestsList.includes('nature')) {
+    overview += ` This garden city offers incredible botanical attractions, nature reserves, and innovative green spaces in an urban setting.`;
+  } else {
+    overview += ` This ultra-modern metropolis offers efficient transport, diverse neighborhoods, and experiences from luxury shopping to authentic hawker centers.`;
+  }
+
+  // Customize itinerary based on interests
+  let day1, day2, day3;
+  
+  if (interestsList.includes('culture')) {
+    day1 = `Day 1: Morning - National Museum of Singapore (S$15) and Asian Civilisations Museum (S$12). Afternoon - Chinatown Heritage Centre (S$15) and Buddha Tooth Relic Temple (free). Evening - Cultural dinner in Chinatown (S$20-35).`;
+    day2 = `Day 2: Morning - Little India district walking tour and Sri Veeramakaliamman Temple (free). Afternoon - Kampong Glam, Sultan Mosque (free), and Malay Heritage Centre (S$8). Evening - Arab Street cultural dining (S$25-40).`;
+    day3 = `Day 3: Morning - Peranakan Museum (S$10) and traditional shophouses tour. Afternoon - Singapore Art Museum (S$12) and cultural performances. Evening - Cultural show at Esplanade (S$30-60).`;
+  } else if (interestsList.includes('food')) {
+    day1 = `Day 1: Morning - Maxwell Food Centre hawker breakfast and food tour (S$15-25). Afternoon - Chinatown food trail and traditional bakeries. Evening - Newton Food Centre dinner experience (S$15-30).`;
+    day2 = `Day 2: Morning - Tekka Centre Little India food exploration (S$10-20). Afternoon - Cooking class for local dishes (S$80-120). Evening - Lau Pa Sat hawker center and satay street (S$20-35).`;
+    day3 = `Day 3: Morning - Tiong Bahru Market and hipster cafés (S$15-25). Afternoon - Food tour of Katong/Joo Chiat for Peranakan cuisine (S$40-60). Evening - Fine dining at Michelin-starred hawker stall (S$50-80).`;
+  } else if (interestsList.includes('nightlife')) {
+    day1 = `Day 1: Morning - Marina Bay Sands SkyPark (S$26) for city views. Afternoon - Clarke Quay riverside area exploration. Evening - Rooftop bars at Marina Bay with Singapore Sling (S$40-70).`;
+    day2 = `Day 2: Morning - Gardens by the Bay (S$28) and Supertree Grove. Afternoon - Orchard Road shopping and cafés. Evening - Boat Quay nightlife and riverside bars (S$35-60).`;
+    day3 = `Day 3: Morning - Sentosa Island beaches (S$4 entry). Afternoon - Beach clubs and day parties. Evening - Siloso Beach bars and night beach activities (S$50-90).`;
+  } else if (interestsList.includes('nature')) {
+    day1 = `Day 1: Morning - Singapore Botanic Gardens (free) and National Orchid Garden (S$5). Afternoon - Gardens by the Bay and Cloud Forest (S$28). Evening - Supertree Grove light show (free).`;
+    day2 = `Day 2: Morning - MacRitchie Reservoir TreeTop Walk (free). Afternoon - Singapore Zoo (S$39) and wildlife experiences. Evening - Night Safari (S$49) - world's first nocturnal zoo.`;
+    day3 = `Day 3: Morning - Pulau Ubin island nature trip (S$3 ferry + bike rental S$10). Afternoon - Chek Jawa wetlands and mangrove boardwalk. Evening - Return to city, East Coast Park cycling (S$8 bike rental).`;
+  } else {
+    // Default balanced itinerary
+    day1 = `Day 1: Morning - Gardens by the Bay (S$28) including Supertree Grove and Cloud Forest. Afternoon - Marina Bay Sands SkyPark (S$26) and Merlion Park (free). Evening - Dinner at Lau Pa Sat hawker center (S$15-25).`;
+    day2 = `Day 2: Morning - Singapore Botanic Gardens (free) and National Orchid Garden (S$5). Afternoon - Chinatown Heritage Centre (S$15) and Buddha Tooth Relic Temple (free). Evening - Chinatown street food tour (S$20-35).`;
+    day3 = `Day 3: Morning - Sentosa Island via cable car (S$35 return) - Universal Studios (S$81) or beaches (free). Afternoon - S.E.A. Aquarium (S$41) or Siloso Beach. Evening - Clarke Quay riverside dining (S$30-50).`;
+  }
+
+  return `OVERVIEW: ${overview}
+
+DAY-BY-DAY ITINERARY:
+${day1}
+${day2}
+${day3}
+${duration > 3 ? `Day 4: Morning - Little India district walking tour (free) and Sri Veeramakaliamman Temple. Afternoon - Kampong Glam and Sultan Mosque (free), Arab Street shopping. Evening - Haji Lane bars and cafés (S$25-45).` : ''}
+${duration > 4 ? `Day 5: Morning - Singapore Zoo (S$39) or River Safari (S$34). Afternoon - Orchard Road shopping district. Evening - Night Safari (S$49) - world's first nocturnal zoo.` : ''}
+
+BUDGET BREAKDOWN (${displayBudget} total, ~S$${Math.round(parseInt(displayDaily.replace(/[^0-9]/g, '')) * 1.35)}/day):
+${budgetLevel === 'budget' ? 
+  '• Accommodation: S$35-65/night (hostels in Chinatown, Little India)\n• Food: S$20-35/day (hawker centers, food courts)\n• Transport: S$12/day (MRT day pass)\n• Activities: S$20-40/day (mix of free and paid attractions)' :
+  budgetLevel === 'mid-range' ?
+  '• Accommodation: S$80-160/night (boutique hotels, central areas)\n• Food: S$40-70/day (restaurants, cafes, some hawker food)\n• Transport: S$12/day (MRT pass)\n• Activities: S$40-70/day (major attractions, tours)' :
+  '• Accommodation: S$200-550/night (luxury hotels, Marina Bay area)\n• Food: S$80-160/day (fine dining, rooftop restaurants)\n• Transport: S$30-55/day (taxis, private transfers)\n• Activities: S$70-140/day (premium experiences, private tours)'
+}
+
+MONEY-SAVING TIPS: Use MRT (subway) instead of taxis - efficient and cheap. Eat at hawker centers for authentic food at local prices. Many attractions offer combo tickets. Visit during Great Singapore Sale (June-July) for shopping discounts.
+
+LOCAL FOOD: Hainanese Chicken Rice (S$4-7 at hawker centers), Laksa (S$5-8), Char Kway Teow (S$4-7), Singapore Sling at Raffles Hotel (S$35) or local bars (S$12-18), Kaya Toast breakfast (S$3-6). Best hawker centers: Maxwell Food Centre, Newton Food Centre, Lau Pa Sat.
+
+LOCAL SECRET: Visit Tiong Bahru neighborhood for hipster cafes, indie bookstores, and art deco architecture - a local favorite away from tourist crowds. Free heritage trail available.
+
+PRACTICAL INFO: Singapore Dollar (S$). No tipping required. Tap water is safe. Download GrabTaxi app. Dress modestly for temples. Chewing gum is banned. Most signs in English. Very safe city with low crime rates.`;
+}
+
+function generateKyotoGuide(displayBudget, displayDaily, budgetLevel, duration, interests) {
   return `OVERVIEW: Kyoto, Japan's ancient capital, enchants with over 2,000 temples, traditional geisha districts, and exquisite gardens. This UNESCO World Heritage city offers authentic Japanese culture, seasonal beauty, and spiritual experiences in a harmonious blend of tradition and modernity.
 
 DAY-BY-DAY ITINERARY:
