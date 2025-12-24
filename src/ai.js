@@ -24,24 +24,39 @@ async function generateDetailedTravelGuide(city, travelerType, interests, checkI
   
   const prompt = `You are a smart, concise travel assistant. Create a compact but essential tourist guide for ${city}, tailored to a trip of ${duration} days and a total budget of ${budgetAmount} ${currency} (including accommodation, food, transport, and attractions).
 
+CRITICAL REQUIREMENTS:
+- You MUST include specific attraction names, restaurant names, and neighborhood names for ${city}
+- You MUST include realistic price estimates for ${city}
+- You MUST provide a detailed day-by-day itinerary with specific activities
+- You MUST mention local food specialties specific to ${city}
+- DO NOT give generic advice - everything must be specific to ${city}
+
 Your output must include:
 
-A brief overview of the city (2–3 sentences highlighting vibe, culture, and must-know tips).
+OVERVIEW: A brief overview of ${city} (2–3 sentences highlighting vibe, culture, and must-know tips specific to this city).
 
-A day-by-day itinerary (morning, afternoon, evening) with:
-- Top 2–3 essential attractions or experiences per day
-- Estimated time needed and opening hours (if relevant)
-- Practical notes (e.g., "book in advance," "free entry on Sundays")
+DAY-BY-DAY ITINERARY: For each of the ${duration} days, provide:
+Morning: Specific attraction/activity with name, estimated cost, and time needed
+Afternoon: Specific attraction/activity with name, estimated cost, and time needed  
+Evening: Specific restaurant/area recommendation with name and price range
+Include practical notes (opening hours, booking requirements, transport between locations)
 
-Budget breakdown by category (lodging, meals, local transport, attractions).
+BUDGET BREAKDOWN: Realistic daily costs for ${city}:
+- Accommodation: Specific price ranges for ${city}
+- Meals: Actual meal costs in ${city} with restaurant examples
+- Local transport: Exact transport costs and pass options for ${city}
+- Attractions: Real entrance fees for major ${city} attractions
 
-Money-saving tips specific to the city (free walking tours, affordable local eats, transport passes, etc.).
+MONEY-SAVING TIPS: At least 3 specific tips for saving money in ${city} (free attractions, cheap eats, transport hacks, etc.)
 
-One local secret or off-the-beaten-path suggestion that fits the budget.
+LOCAL FOOD: List 5 must-try dishes/drinks specific to ${city} with where to find them and approximate costs
 
-Keep the language clear, professional, and actionable. Avoid fluff. Prioritize realism, walkability, and seasonal appropriateness. Do not invent prices—use general estimates based on typical low/mid-range traveler spending.
+LOCAL SECRET: One off-the-beaten-path recommendation specific to ${city} that fits the budget
 
-Additional context: This is for a ${travelerType} traveler interested in ${interests}. Make recommendations appropriate for this traveler type and interests.`;
+Keep language clear and actionable. Prioritize realism and specific information over generic advice. This is for a ${travelerType} traveler interested in ${interests}.
+
+REMEMBER: Every recommendation must be specific to ${city} - no generic "research attractions" or "ask locals" advice!`;
+
 
   try {
     // Try primary AI model first
@@ -58,12 +73,19 @@ Additional context: This is for a ${travelerType} traveler interested in ${inter
     if (response) {
       const aiResponse = response.trim();
       
-      // Validate that the response is specific and useful
-      if (aiResponse.includes(city) && aiResponse.length > 300 && 
-          (aiResponse.includes('day-by-day') || aiResponse.includes('Day 1') || aiResponse.includes('Morning'))) {
+      // Enhanced validation for specific content
+      const hasSpecificContent = aiResponse.includes(city) && 
+                                 aiResponse.length > 400 && 
+                                 (aiResponse.includes('Day 1') || aiResponse.includes('Morning') || aiResponse.includes('day-by-day')) &&
+                                 !aiResponse.includes('Research') && 
+                                 !aiResponse.includes('ask locals') &&
+                                 (aiResponse.match(/€\d+|£\d+|\$\d+|¥\d+|฿\d+/g) || []).length >= 3; // At least 3 price mentions
+      
+      if (hasSpecificContent) {
+        console.log('AI generated specific guide for', city);
         return aiResponse;
       } else {
-        console.log('AI response not specific enough, using enhanced fallback');
+        console.log('AI response not specific enough for', city, '- using enhanced fallback');
         throw new Error('AI response not specific enough');
       }
     } else {
@@ -143,6 +165,81 @@ function getDetailedFallbackGuide(city, travelerType, interests, duration, budge
   const displayDaily = budget && budget !== 'undefined' ? `€${dailyBudget}` : '€140';
   
   const guides = {
+    'singapore': `OVERVIEW: Singapore is a vibrant city-state blending futuristic architecture with rich cultural heritage, world-class street food, and tropical gardens. This ultra-modern metropolis offers efficient transport, diverse neighborhoods, and experiences from luxury shopping to authentic hawker centers.
+
+DAY-BY-DAY ITINERARY:
+Day 1: Morning - Gardens by the Bay (€20, 2-3 hours) including Supertree Grove and Cloud Forest. Afternoon - Marina Bay Sands SkyPark (€20) and Merlion Park (free). Evening - Dinner at Lau Pa Sat hawker center (€8-15 per meal).
+Day 2: Morning - Singapore Botanic Gardens (free, 2 hours) and National Orchid Garden (€4). Afternoon - Chinatown Heritage Centre (€10) and Buddha Tooth Relic Temple (free). Evening - Chinatown street food tour (€15-25).
+Day 3: Morning - Sentosa Island via cable car (€25 return) - Universal Studios (€60) or beaches (free). Afternoon - S.E.A. Aquarium (€30) or Siloso Beach. Evening - Clarke Quay riverside dining (€20-40).
+${duration > 3 ? `Day 4: Morning - Little India district walking tour (free) and Sri Veeramakaliamman Temple. Afternoon - Kampong Glam and Sultan Mosque (free), Arab Street shopping. Evening - Haji Lane bars and cafes (€15-30).` : ''}
+${duration > 4 ? `Day 5: Morning - Singapore Zoo (€25) or River Safari (€30). Afternoon - Orchard Road shopping district. Evening - Night Safari (€35) - world's first nocturnal zoo.` : ''}
+
+BUDGET BREAKDOWN (${displayBudget} total, ~${displayDaily}/day):
+${budgetLevel === 'budget' ? 
+  '• Accommodation: €25-45/night (hostels in Chinatown, Little India)\n• Food: €15-25/day (hawker centers, food courts)\n• Transport: €8/day (MRT day pass)\n• Activities: €15-30/day (mix of free and paid attractions)' :
+  budgetLevel === 'mid-range' ?
+  '• Accommodation: €60-120/night (boutique hotels, central areas)\n• Food: €30-50/day (restaurants, cafes, some hawker food)\n• Transport: €8/day (MRT pass)\n• Activities: €30-50/day (major attractions, tours)' :
+  '• Accommodation: €150-400/night (luxury hotels, Marina Bay area)\n• Food: €60-120/day (fine dining, rooftop restaurants)\n• Transport: €20-40/day (taxis, private transfers)\n• Activities: €50-100/day (premium experiences, private tours)'
+}
+
+MONEY-SAVING TIPS: Use MRT (subway) instead of taxis - efficient and cheap. Eat at hawker centers for authentic food at local prices. Many attractions offer combo tickets. Visit during Great Singapore Sale (June-July) for shopping discounts.
+
+LOCAL FOOD: Hainanese Chicken Rice (€3-5 at hawker centers), Laksa (€4-6), Char Kway Teow (€3-5), Singapore Sling at Raffles Hotel (€25) or local bars (€8-12), Kaya Toast breakfast (€2-4). Best hawker centers: Maxwell Food Centre, Newton Food Centre, Lau Pa Sat.
+
+LOCAL SECRET: Visit Tiong Bahru neighborhood for hipster cafes, indie bookstores, and art deco architecture - a local favorite away from tourist crowds. Free heritage trail available.
+
+PRACTICAL INFO: No tipping required. Tap water is safe. Download GrabTaxi app. Dress modestly for temples. Chewing gum is banned. Most signs in English. Very safe city with low crime rates.`,
+
+    'tokyo': `OVERVIEW: Tokyo seamlessly blends ancient traditions with cutting-edge technology, offering everything from serene temples to neon-lit districts. This megacity provides incredible food culture, efficient transport, and unique experiences from traditional ryokans to robot restaurants.
+
+DAY-BY-DAY ITINERARY:
+Day 1: Morning - Senso-ji Temple in Asakusa (free) and Nakamise shopping street. Afternoon - Tokyo Skytree (€15-25) or free observation deck at Tokyo Metropolitan Building. Evening - Shibuya Crossing and dinner in Shibuya (€15-30).
+Day 2: Morning - Tsukiji Outer Market food tour (€20-30) and sushi breakfast. Afternoon - Imperial Palace East Gardens (free) and Ginza district. Evening - Traditional izakaya in Shinjuku Golden Gai (€25-40).
+Day 3: Morning - Meiji Shrine (free) and Harajuku district. Afternoon - Takeshita Street shopping and Omotesando Hills. Evening - Roppongi nightlife district (€20-50).
+${duration > 3 ? `Day 4: Morning - Day trip to Nikko (€25 train) - Toshogu Shrine and nature. Afternoon - Lake Chuzenji area. Evening - Return to Tokyo, ramen dinner (€8-12).` : ''}
+${duration > 4 ? `Day 5: Morning - Ueno Park and museums (€5-10 each). Afternoon - Akihabara electronics district. Evening - Karaoke in Shibuya (€15-25 per hour).` : ''}
+
+BUDGET BREAKDOWN (${displayBudget} total, ~¥${Math.round(dailyBudget * 110)}/day):
+${budgetLevel === 'budget' ? 
+  '• Accommodation: ¥3000-6000/night (capsule hotels, hostels)\n• Food: ¥2000-3500/day (convenience stores, ramen, bento)\n• Transport: ¥800/day (day pass)\n• Activities: ¥1000-2000/day (temples free, some museums)' :
+  budgetLevel === 'mid-range' ?
+  '• Accommodation: ¥8000-15000/night (business hotels, ryokans)\n• Food: ¥4000-7000/day (restaurants, sushi, izakaya)\n• Transport: ¥800/day (JR pass)\n• Activities: ¥2000-4000/day (attractions, experiences)' :
+  '• Accommodation: ¥20000-50000/night (luxury hotels, high-end ryokans)\n• Food: ¥8000-15000/day (fine dining, kaiseki, premium sushi)\n• Transport: ¥2000-4000/day (taxis, private transfers)\n• Activities: ¥5000-10000/day (premium experiences, private guides)'
+}
+
+MONEY-SAVING TIPS: Buy JR Pass for unlimited train travel. Eat at convenience stores (surprisingly good food). Many temples and parks are free. Happy hour at department store restaurant floors (11th-14th floors typically).
+
+LOCAL FOOD: Ramen (¥800-1200), Sushi at Tsukiji (¥2000-5000), Tempura (¥1500-3000), Wagyu beef (¥5000+), Matcha and wagashi sweets (¥500-800). Try: Ichiran Ramen, Sushi Dai, Tempura Daikokuya.
+
+LOCAL SECRET: Visit Omoide Yokocho (Memory Lane) in Shinjuku for tiny yakitori stalls and authentic atmosphere. Open late, very local experience.
+
+PRACTICAL INFO: Download Google Translate with camera feature. Bow slightly when greeting. Remove shoes in temples/homes. Cash-based society - withdraw from 7-Eleven ATMs. Extremely safe city.`,
+
+    'bangkok': `OVERVIEW: Bangkok pulses with energy, offering ornate temples, bustling markets, incredible street food, and vibrant nightlife. This chaotic yet charming capital provides authentic Thai culture, affordable luxury, and experiences from floating markets to rooftop bars.
+
+DAY-BY-DAY ITINERARY:
+Day 1: Morning - Grand Palace and Wat Phra Kaew (€12, 3 hours). Afternoon - Wat Pho temple with reclining Buddha (€3) and traditional massage (€8-15). Evening - Khao San Road street food and bars (€10-20).
+Day 2: Morning - Floating market tour - Damnoen Saduak (€25 including transport). Afternoon - Return to city, Wat Arun temple (€2). Evening - Chao Phraya river dinner cruise (€15-30).
+Day 3: Morning - Chatuchak Weekend Market (free entry, shopping budget varies). Afternoon - Jim Thompson House (€4) and shopping at MBK Center. Evening - Rooftop bar at Lebua or cheaper alternatives (€8-25 per drink).
+${duration > 3 ? `Day 4: Morning - Day trip to Ayutthaya ancient capital (€20 including train). Afternoon - Temple ruins exploration. Evening - Return to Bangkok, street food tour in Chinatown (€10-15).` : ''}
+${duration > 4 ? `Day 5: Morning - Lumpini Park (free) and nearby temples. Afternoon - Siam Square shopping district. Evening - Traditional Thai massage and spa (€15-30).` : ''}
+
+BUDGET BREAKDOWN (${displayBudget} total, ~฿${Math.round(dailyBudget * 33)}/day):
+${budgetLevel === 'budget' ? 
+  '• Accommodation: ฿400-800/night (hostels, guesthouses)\n• Food: ฿300-600/day (street food, local restaurants)\n• Transport: ฿150/day (BTS/MRT day pass)\n• Activities: ฿200-500/day (temples, markets)' :
+  budgetLevel === 'mid-range' ?
+  '• Accommodation: ฿1200-2500/night (boutique hotels, central areas)\n• Food: ฿600-1200/day (restaurants, some street food)\n• Transport: ฿150/day (public transport)\n• Activities: ฿500-1000/day (tours, attractions, massages)' :
+  '• Accommodation: ฿3000-8000/night (luxury hotels, river views)\n• Food: ฿1500-3000/day (fine dining, hotel restaurants)\n• Transport: ฿500-1000/day (taxis, private transfers)\n• Activities: ฿1000-2500/day (premium spas, private tours)'
+}
+
+MONEY-SAVING TIPS: Eat street food for authentic and cheap meals. Use BTS/MRT instead of taxis during rush hour. Many temples are free or very cheap. Bargain at markets but not in malls.
+
+LOCAL FOOD: Pad Thai (฿40-80), Tom Yum soup (฿60-120), Mango sticky rice (฿60-100), Som tam salad (฿40-80), Thai iced tea (฿20-40). Best areas: Chinatown for street food, Thonglor for trendy restaurants.
+
+LOCAL SECRET: Visit Talad Rot Fai night market (Train Market) for vintage finds, local food, and live music - popular with young Thais, less touristy than Chatuchak.
+
+PRACTICAL INFO: Download Grab app for transport. Dress modestly for temples (cover shoulders/knees). Bargain at markets. Tap water not recommended - buy bottled. Very friendly locals, "wai" greeting appreciated.`,
+
     'verona': `DESTINATION OVERVIEW: Verona, the city of Romeo and Juliet, enchants visitors with its perfectly preserved Roman amphitheater, medieval streets, and romantic atmosphere. This UNESCO World Heritage site offers an intimate Italian experience with world-class opera, excellent Veneto wines, and authentic local cuisine away from Venice's crowds.
 
 KEY INFORMATION: Best visited April-June and September-October. Currency: Euro (EUR). Language: Italian (limited English). Verona Card: €20/24h, €25/48h includes public transport and museums. Train station 15 minutes walk to city center.
@@ -350,26 +447,28 @@ PRACTICAL INFO: ${budgetLevel === 'budget' ? 'Contactless payment widely accepte
     return guides[cityKey];
   }
 
-  // Enhanced generic fallback with more specific structure
-  return `DESTINATION OVERVIEW: ${city} is a fascinating destination that offers unique experiences for ${travelerType} travelers interested in ${interests}. This city provides excellent value for money with diverse attractions and authentic local culture.
+  // Enhanced generic fallback with actionable structure
+  return `OVERVIEW: ${city} offers diverse experiences for ${travelerType} travelers interested in ${interests}. This destination combines cultural attractions, local cuisine, and authentic experiences within your ${displayBudget} budget.
 
-KEY INFORMATION: Research the best time to visit ${city} based on weather and local events. Check visa requirements, local currency, and basic language phrases. Look into city transport passes and tourist cards for savings.
+DAY-BY-DAY ITINERARY: 
+Day 1: Morning - Explore ${city}'s historic center and main landmarks (research top-rated attractions on TripAdvisor). Afternoon - Visit the main cultural district and local markets. Evening - Try traditional ${city} cuisine at highly-rated local restaurants.
+Day 2: Morning - Visit ${city}'s most famous museum or cultural site. Afternoon - Explore a different neighborhood known for local life. Evening - Experience ${city}'s nightlife or entertainment district.
+${duration > 2 ? `Day 3: Morning - Take a walking tour or visit parks/gardens. Afternoon - Shopping district or artisan areas. Evening - Local food market or cooking experience.` : ''}
+${duration > 3 ? `Day 4: Day trip to nearby attractions or deeper exploration of ${city}'s outskirts and local neighborhoods.` : ''}
 
 BUDGET BREAKDOWN (${displayBudget} total, ~${displayDaily} per day):
-• Accommodation: ${budgetLevel === 'budget' ? 'Hostels, budget hotels, guesthouses in residential areas' : budgetLevel === 'mid-range' ? 'Mid-range hotels, boutique properties, central locations' : 'Luxury hotels, premium locations, full-service amenities'}
-• Food: ${budgetLevel === 'budget' ? 'Local markets, street food, casual restaurants, self-catering' : budgetLevel === 'mid-range' ? 'Mix of local restaurants, cafés, some fine dining experiences' : 'Fine dining, premium restaurants, exclusive culinary experiences'}
-• Transport: ${budgetLevel === 'budget' ? 'Public transport passes, walking, bike rentals' : budgetLevel === 'mid-range' ? 'Public transport plus occasional taxis' : 'Private transfers, taxis, premium transport options'}
-• Activities: ${budgetLevel === 'budget' ? 'Free attractions, walking tours, public spaces, some paid museums' : budgetLevel === 'mid-range' ? 'Mix of free and paid attractions, guided tours' : 'Premium tours, exclusive experiences, private guides'}
+• Accommodation: ${budgetLevel === 'budget' ? 'Hostels, guesthouses, budget hotels (€25-50/night)' : budgetLevel === 'mid-range' ? 'Mid-range hotels, boutique properties (€60-120/night)' : 'Luxury hotels, premium locations (€150-300/night)'}
+• Food: ${budgetLevel === 'budget' ? 'Street food, local markets, casual dining (€15-30/day)' : budgetLevel === 'mid-range' ? 'Mix of local restaurants and some fine dining (€30-60/day)' : 'Fine dining, premium restaurants (€60-120/day)'}
+• Transport: ${budgetLevel === 'budget' ? 'Public transport, walking (€5-15/day)' : budgetLevel === 'mid-range' ? 'Public transport plus occasional taxis (€10-25/day)' : 'Taxis, private transfers (€20-50/day)'}
+• Activities: ${budgetLevel === 'budget' ? 'Free attractions, some museums (€10-25/day)' : budgetLevel === 'mid-range' ? 'Mix of free and paid attractions (€20-40/day)' : 'Premium tours, exclusive experiences (€40-80/day)'}
 
-MUST-SEE ATTRACTIONS: Research ${city}'s top 5 attractions including historical sites, museums, cultural landmarks, and natural areas. Look for free days at museums, city viewpoints, and walking areas. Check opening hours and advance booking requirements.
+MONEY-SAVING TIPS: Look for free walking tours in ${city}. Eat where locals eat for authentic and affordable meals. Check for museum free days or city tourist cards. Use public transport instead of taxis.
 
-DAY-BY-DAY ITINERARY: Plan your ${duration} days in ${city} by grouping attractions by area to minimize transport time. Balance must-see sights with spontaneous exploration. Include rest time and meal breaks. Consider day trips if staying longer.
+LOCAL FOOD: Research ${city}'s signature dishes and local specialties. Visit local markets for fresh ingredients and street food. Ask your accommodation for restaurant recommendations away from tourist areas.
 
-LOCAL TIPS: Connect with locals through free walking tours, language exchange meetups, or local markets. Ask for recommendations at your accommodation. Download offline maps and translation apps. Research local customs and etiquette.
+LOCAL SECRET: Explore residential neighborhoods in ${city} for authentic local life, hidden cafes, and better prices. Check local event listings for festivals or cultural events during your visit.
 
-FOOD RECOMMENDATIONS: Try ${city}'s signature dishes and local specialties. Visit local markets for fresh ingredients and authentic experiences. Ask locals for their favorite neighborhood restaurants away from tourist areas.
-
-PRACTICAL INFO: Download useful apps for ${city} including transport, maps, and restaurant recommendations. Research tipping customs, safety considerations, and emergency contacts. Check if attractions offer student or group discounts.`;
+PRACTICAL INFO: Download offline maps and translation apps for ${city}. Research local customs, tipping practices, and basic phrases. Check opening hours for major attractions and book popular sites in advance.`;
 }
 
 module.exports = {
