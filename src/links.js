@@ -4,7 +4,7 @@
 
 /**
  * Generate Booking.com flight search link with pre-filled data
- * Using a simplified URL structure that works reliably with Booking.com
+ * Using the correct Booking.com flights URL format
  * @param {string} origin - Origin city
  * @param {string} destination - Destination city
  * @param {string} checkIn - Check-in date (YYYY-MM-DD)
@@ -13,37 +13,89 @@
  * @returns {string} Booking.com flights link with parameters
  */
 function generateFlightLink(origin, destination, checkIn, checkOut, travelerType) {
-  // Get airport codes for cities
-  const getAirportCode = (city) => {
-    const airports = {
+  // Get city codes and country codes for cities
+  const getCityInfo = (city) => {
+    const cities = {
       // European cities
-      'milan': 'MXP', 'milano': 'MXP',
-      'paris': 'CDG',
-      'london': 'LHR',
-      'rome': 'FCO', 'roma': 'FCO',
-      'barcelona': 'BCN',
-      'madrid': 'MAD',
-      'amsterdam': 'AMS',
-      'berlin': 'BER',
-      'vienna': 'VIE',
-      'prague': 'PRG',
-      'lisbon': 'LIS', 'lisboa': 'LIS',
-      'venice': 'VCE', 'venezia': 'VCE',
-      'cardiff': 'CWL',
-      'manchester': 'MAN',
-      'dublin': 'DUB',
-      'zurich': 'ZUR',
+      'milan': { code: 'MIL.CITY', country: 'IT', name: 'Milan' },
+      'milano': { code: 'MIL.CITY', country: 'IT', name: 'Milan' },
+      'paris': { code: 'PAR.CITY', country: 'FR', name: 'Paris' },
+      'london': { code: 'LON.CITY', country: 'GB', name: 'London' },
+      'rome': { code: 'ROM.CITY', country: 'IT', name: 'Rome' },
+      'roma': { code: 'ROM.CITY', country: 'IT', name: 'Rome' },
+      'barcelona': { code: 'BCN.CITY', country: 'ES', name: 'Barcelona' },
+      'madrid': { code: 'MAD.CITY', country: 'ES', name: 'Madrid' },
+      'amsterdam': { code: 'AMS.CITY', country: 'NL', name: 'Amsterdam' },
+      'berlin': { code: 'BER.CITY', country: 'DE', name: 'Berlin' },
+      'vienna': { code: 'VIE.CITY', country: 'AT', name: 'Vienna' },
+      'prague': { code: 'PRG.CITY', country: 'CZ', name: 'Prague' },
+      'lisbon': { code: 'LIS.CITY', country: 'PT', name: 'Lisbon' },
+      'lisboa': { code: 'LIS.CITY', country: 'PT', name: 'Lisbon' },
+      'venice': { code: 'VCE.CITY', country: 'IT', name: 'Venice' },
+      'venezia': { code: 'VCE.CITY', country: 'IT', name: 'Venice' },
+      'florence': { code: 'FLR.CITY', country: 'IT', name: 'Florence' },
+      'firenze': { code: 'FLR.CITY', country: 'IT', name: 'Florence' },
+      'naples': { code: 'NAP.CITY', country: 'IT', name: 'Naples' },
+      'napoli': { code: 'NAP.CITY', country: 'IT', name: 'Naples' },
+      'dublin': { code: 'DUB.CITY', country: 'IE', name: 'Dublin' },
+      'zurich': { code: 'ZUR.CITY', country: 'CH', name: 'Zurich' },
+      'brussels': { code: 'BRU.CITY', country: 'BE', name: 'Brussels' },
+      'bruxelles': { code: 'BRU.CITY', country: 'BE', name: 'Brussels' },
+      'copenhagen': { code: 'CPH.CITY', country: 'DK', name: 'Copenhagen' },
+      'stockholm': { code: 'STO.CITY', country: 'SE', name: 'Stockholm' },
+      'oslo': { code: 'OSL.CITY', country: 'NO', name: 'Oslo' },
+      'helsinki': { code: 'HEL.CITY', country: 'FI', name: 'Helsinki' },
+      'warsaw': { code: 'WAW.CITY', country: 'PL', name: 'Warsaw' },
+      'krakow': { code: 'KRK.CITY', country: 'PL', name: 'Krakow' },
+      'budapest': { code: 'BUD.CITY', country: 'HU', name: 'Budapest' },
+      'athens': { code: 'ATH.CITY', country: 'GR', name: 'Athens' },
+      'istanbul': { code: 'IST.CITY', country: 'TR', name: 'Istanbul' },
+      
       // American cities
-      'new york': 'JFK', 'newyork': 'JFK', 'nyc': 'JFK',
-      'los angeles': 'LAX', 'losangeles': 'LAX', 'la': 'LAX',
-      'chicago': 'ORD',
-      'miami': 'MIA',
-      'las vegas': 'LAS', 'lasvegas': 'LAS', 'vegas': 'LAS',
-      'san francisco': 'SFO', 'sanfrancisco': 'SFO', 'sf': 'SFO'
+      'new york': { code: 'NYC.CITY', country: 'US', name: 'New York' },
+      'newyork': { code: 'NYC.CITY', country: 'US', name: 'New York' },
+      'nyc': { code: 'NYC.CITY', country: 'US', name: 'New York' },
+      'los angeles': { code: 'LAX.CITY', country: 'US', name: 'Los Angeles' },
+      'losangeles': { code: 'LAX.CITY', country: 'US', name: 'Los Angeles' },
+      'la': { code: 'LAX.CITY', country: 'US', name: 'Los Angeles' },
+      'chicago': { code: 'CHI.CITY', country: 'US', name: 'Chicago' },
+      'miami': { code: 'MIA.CITY', country: 'US', name: 'Miami' },
+      'las vegas': { code: 'LAS.CITY', country: 'US', name: 'Las Vegas' },
+      'lasvegas': { code: 'LAS.CITY', country: 'US', name: 'Las Vegas' },
+      'vegas': { code: 'LAS.CITY', country: 'US', name: 'Las Vegas' },
+      'san francisco': { code: 'SFO.CITY', country: 'US', name: 'San Francisco' },
+      'sanfrancisco': { code: 'SFO.CITY', country: 'US', name: 'San Francisco' },
+      'sf': { code: 'SFO.CITY', country: 'US', name: 'San Francisco' },
+      'boston': { code: 'BOS.CITY', country: 'US', name: 'Boston' },
+      'washington': { code: 'WAS.CITY', country: 'US', name: 'Washington' },
+      'seattle': { code: 'SEA.CITY', country: 'US', name: 'Seattle' },
+      
+      // Asian cities
+      'tokyo': { code: 'TYO.CITY', country: 'JP', name: 'Tokyo' },
+      'osaka': { code: 'OSA.CITY', country: 'JP', name: 'Osaka' },
+      'kyoto': { code: 'KIX.CITY', country: 'JP', name: 'Kyoto' },
+      'singapore': { code: 'SIN.CITY', country: 'SG', name: 'Singapore' },
+      'bangkok': { code: 'BKK.CITY', country: 'TH', name: 'Bangkok' },
+      'hong kong': { code: 'HKG.CITY', country: 'HK', name: 'Hong Kong' },
+      'hongkong': { code: 'HKG.CITY', country: 'HK', name: 'Hong Kong' },
+      'seoul': { code: 'SEL.CITY', country: 'KR', name: 'Seoul' },
+      'mumbai': { code: 'BOM.CITY', country: 'IN', name: 'Mumbai' },
+      'delhi': { code: 'DEL.CITY', country: 'IN', name: 'Delhi' },
+      'new delhi': { code: 'DEL.CITY', country: 'IN', name: 'New Delhi' }
     };
     
     const cityKey = city.toLowerCase();
-    return airports[cityKey] || city.substring(0, 3).toUpperCase();
+    if (cities[cityKey]) {
+      return cities[cityKey];
+    }
+    
+    // Default fallback
+    const cityName = city.charAt(0).toUpperCase() + city.slice(1).toLowerCase();
+    return {
+      code: cityName.substring(0, 3).toUpperCase() + '.CITY',
+      country: 'XX',
+      name: cityName
+    };
   };
   
   // Determine number of travelers based on type
@@ -63,23 +115,31 @@ function generateFlightLink(origin, destination, checkIn, checkOut, travelerType
     }
   };
   
-  const originCode = getAirportCode(origin);
-  const destCode = getAirportCode(destination);
+  const originInfo = getCityInfo(origin);
+  const destInfo = getCityInfo(destination);
   const travelers = getTravelerCount(travelerType);
   
-  // Use Booking.com's simplified flight search URL
-  const baseUrl = 'https://www.booking.com/flights/';
+  // Build the URL using the correct Booking.com flights format
+  const baseUrl = `https://flights.booking.com/flights/${originInfo.code}-${destInfo.code}/`;
   
   const params = new URLSearchParams({
-    'aid': '304142', // Booking.com affiliate ID placeholder
-    'from_sf': originCode,
-    'to_sf': destCode,
+    'type': 'ROUNDTRIP',
+    'adults': travelers.adults.toString(),
+    'cabinClass': 'ECONOMY',
+    'children': travelers.children > 0 ? travelers.children.toString() : '',
+    'from': originInfo.code,
+    'to': destInfo.code,
+    'fromCountry': originInfo.country,
+    'toCountry': destInfo.country,
+    'fromLocationName': originInfo.name,
+    'toLocationName': destInfo.name,
     'depart': checkIn,
     'return': checkOut,
-    'adults': travelers.adults.toString(),
-    'children': travelers.children.toString(),
-    'cabinclass': 'economy',
-    'type': 'roundtrip'
+    'sort': 'BEST',
+    'travelPurpose': 'leisure',
+    'ca_source': 'flights_index_sb',
+    'aid': '304142',
+    'label': 'gen173nr-10EgdmbGlnaHRzKIICOOgHSDNYBGhQiAEBmAEzuAEHyAEN2AED6AEB-AEBiAIBqAIBuAKb2bbKBsACAdICJGE1NDQwYTRhLWZhOGQtNGI5YS05MTA3LWEwNWQwZGJmZWJmONgCAeACAQ'
   });
   
   return `${baseUrl}?${params.toString()}`;
